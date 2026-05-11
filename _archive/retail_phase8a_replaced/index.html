@@ -1,0 +1,2888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LENs — Zestly Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #f8fafc;
+      --surface:    #ffffff;
+      --surface2:   #f1f5f9;
+      --border:     #e2e8f0;
+      --border2:    #cbd5e1;
+
+      --text-1:     #0f172a;
+      --text-2:     #475569;
+      --text-3:     #94a3b8;
+
+      /* State colors — only three, no traffic lights */
+      --state-new:         #0f172a;
+      --state-new-bg:      #f0f9ff;
+      --state-new-border:  #bae6fd;
+
+      --state-logged:      #475569;
+      --state-logged-bg:   #f8fafc;
+      --state-logged-border: #cbd5e1;
+
+      --state-done:        #15803d;
+      --state-done-bg:     #f0fdf4;
+      --state-done-border: #bbf7d0;
+
+      /* Primary accent — Mode B operator console (sky-700) */
+      --accent:       #0369a1;
+      --accent-light: rgba(3,105,161,0.08);
+      --accent-dark:  #075985;
+      --accent-soft:  rgba(3,105,161,0.16);
+
+      /* Sendbird brand anchor — retained only for Shared-DNA moments
+         (logo mark + "Built on Sendbird Chat + Desk data" dot). */
+      --teal:       #0d9488;
+      --teal-light: rgba(13,148,136,0.08);
+
+      --shadow-sm:  0 1px 2px rgba(0,0,0,0.05);
+      --shadow:     0 1px 4px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+
+      --sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --radius: 8px;
+    }
+
+    html, body {
+      height: 100%;
+      background: #ffffff;
+      color: var(--text-1);
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Mode B — operator console: monospace for numeric & identifier glyphs */
+    .mono,
+    .num,
+    .count,
+    .metric-value,
+    .kpi-value,
+    .signal-id,
+    .session-id,
+    .tag-id,
+    .scs-value,
+    .lifecycle-chip-count,
+    .nav-badge,
+    .state-badge {
+      font-family: var(--mono);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+    }
+
+    /* Outline-style state badge — replaces filled pills for scan-first operator UI */
+    .state-badge.outline,
+    .badge-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      border-radius: 4px;
+      line-height: 1.4;
+    }
+
+    /* ─── App Shell ─────────────────────────────────────── */
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* ─── Top GNB ───────────────────────────────────────── */
+    .gnb {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 48px;
+      padding: 0 20px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .gnb-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .gnb-logo-mark {
+      width: 26px;
+      height: 26px;
+      background: var(--teal); /* Sendbird brand anchor — Shared DNA */
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gnb-logo-mark svg {
+      width: 14px;
+      height: 14px;
+      stroke: #ffffff;
+    }
+
+    .gnb-wordmark-stack {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .gnb-wordmark {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-1);
+      letter-spacing: -0.3px;
+    }
+
+    .gnb-wordmark span {
+      color: var(--accent);
+    }
+
+    .gnb-wordmark-sub {
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--text-3);
+      letter-spacing: 0.01em;
+      margin-top: 2px;
+    }
+
+    .gnb-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .gnb-cross-link {
+      font-size: 11px;
+      color: var(--text-2);
+      text-decoration: none;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      border: 1px solid var(--border2);
+      transition: all 0.15s;
+    }
+    .gnb-cross-link:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    /* ─── Card chat link (between View messages + Explore toggle) ─ */
+    .card-chat-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--teal);
+      text-decoration: none;
+      background: var(--teal-light);
+      border-top: 1px solid rgba(13,148,136,0.12);
+      border-bottom: 1px solid rgba(13,148,136,0.12);
+      transition: background 0.15s;
+    }
+    .card-chat-link:hover { background: rgba(13,148,136,0.13); }
+    .card-chat-link svg { flex-shrink: 0; opacity: 0.7; }
+
+    .gnb-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-light);
+      border: 1.5px solid var(--border2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    .gnb-user-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-2);
+    }
+
+    /* ─── App Body (below GNB) ──────────────────────────── */
+    .app-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      background: var(--bg);
+      padding: 10px 10px 10px 0;
+      gap: 12px;
+    }
+
+    /* ─── Sidebar ────────────────────────────────────────── */
+    .sidebar {
+      width: 224px;
+      flex-shrink: 0;
+      background: var(--bg);
+      border-right: none;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 3px;
+      letter-spacing: 0.1px;
+    }
+
+    .sidebar-client {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .client-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+    }
+    .client-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-1);
+    }
+    .client-meta {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 2px;
+    }
+
+    .sidebar-nav {
+      padding: 12px 10px;
+      flex: 1;
+    }
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0 8px;
+      margin-bottom: 4px;
+      margin-top: 10px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 8px;
+      border-radius: 7px;
+      cursor: pointer;
+      color: var(--text-2);
+      font-size: 13px;
+      font-weight: 400;
+      transition: background 0.1s;
+      user-select: none;
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text-1); }
+    .nav-item.active {
+      background: var(--accent-light);
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .nav-item-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-icon {
+      width: 16px;
+      height: 16px;
+      opacity: 0.6;
+      flex-shrink: 0;
+    }
+    .nav-item.active .nav-icon { opacity: 1; }
+    .nav-badge {
+      font-size: 10px;
+      font-weight: 600;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 9999px;
+      padding: 1px 6px;
+      line-height: 1.6;
+    }
+    .nav-badge.muted {
+      background: var(--surface2);
+      color: var(--text-3);
+    }
+
+    .sidebar-footer {
+      padding: 14px 18px;
+      border-top: 1px solid var(--border);
+    }
+    .footer-sendbird {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sendbird-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--teal); /* Sendbird brand anchor — Shared DNA */
+      flex-shrink: 0;
+    }
+    .footer-label {
+      font-size: 11px;
+      color: var(--text-3);
+    }
+    .footer-label strong {
+      color: var(--text-2);
+      font-weight: 500;
+    }
+
+    /* ─── Main Content ───────────────────────────────────── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    /* main-header hidden — each view owns its own header row */
+    .main-header { display: none; }
+
+    /* ─── View Containers ────────────────────────────────── */
+    .view {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px;
+    }
+    .view.active { display: block; }
+
+    /* ─── View Header (title row + tab row) ────────────── */
+    .view-header {
+      display: flex; flex-direction: column;
+      padding: 20px 28px 0;
+      background: #fff;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .view-header-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .view-header-title {
+      font-size: 16px; font-weight: 600; color: var(--text-1);
+      letter-spacing: -0.3px;
+    }
+    .view-header-chips {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .header-pill {
+      font-size: 11px; font-weight: 500; padding: 4px 10px;
+      border-radius: 9999px; border: 1px solid var(--border);
+      color: var(--text-2); background: var(--surface2);
+    }
+    .header-pill.accent {
+      background: var(--state-new-bg); border-color: var(--state-new-border); color: #0369a1;
+    }
+
+    /* ─── Pattern B · corpus-level cross-link to Data Center ─── */
+    .header-dc-link {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--sans); font-size: 11px; font-weight: 500;
+      color: var(--teal); text-decoration: none;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      border: 1px solid var(--teal-light);
+      background: var(--teal-light);
+      letter-spacing: 0.01em;
+      transition: background 0.1s, color 0.1s, border-color 0.1s;
+    }
+    .header-dc-link:hover {
+      background: var(--teal);
+      color: #ffffff;
+      border-color: var(--teal);
+    }
+    .header-dc-link svg { flex-shrink: 0; opacity: 0.75; }
+    .header-dc-link:hover svg { opacity: 1; }
+
+    /* ─── Underline Tab Bar (Setup · Diagnostics style) ─── */
+    .view-tab-bar {
+      display: flex;
+      margin: 0 -28px;          /* extend to left/right edges */
+    }
+    .view-tab {
+      font-family: var(--sans); font-size: 13px; font-weight: 400;
+      color: var(--text-3); background: none; border: none;
+      padding: 0 16px 12px;     /* symmetric → underline centered under label */
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;      /* overlap container border so active line sits flush */
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .view-tab:first-child { margin-left: 28px; } /* align first tab with header title */
+    .view-tab:hover { color: var(--text-2); }
+    .view-tab.active {
+      color: var(--text-1); font-weight: 500;
+      border-bottom-color: var(--accent);
+    }
+
+    /* ─── Shared view layout (header + scrollable body) ──── */
+    #view-signals, #view-pipeline, #view-outcomes {
+      padding: 0 !important;
+      overflow: hidden !important;
+    }
+    #view-signals.active  { display: flex; flex-direction: column; }
+    #view-pipeline.active { display: flex; flex-direction: column; }
+    #view-outcomes.active { display: flex; flex-direction: column; }
+    .view-scroll-body { flex: 1; overflow-y: auto; padding: 24px 28px; }
+
+    /* ─── Signals View Layout (pipeline = Signals now) ───── */
+
+    /* Tab panels in signals view */
+    #view-signals .signals-tab-panel { display: none; flex: 1; overflow: hidden; }
+    #view-signals #panel-chat.active { display: block; overflow-y: auto; padding: 24px 28px; }
+    #view-signals #panel-signals.active { display: flex; flex-direction: column; }
+
+    /* ─── Signals Layout: Left Nav + Content ────────────── */
+    .signals-layout { flex: 1; display: flex; overflow: hidden; }
+
+    .signals-left-nav {
+      width: 196px; flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      padding: 20px 0; overflow-y: auto;
+      background: var(--surface);
+    }
+    .slnav-section-label {
+      font-size: 10px; font-weight: 500; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 0 16px; margin-bottom: 4px; margin-top: 8px;
+    }
+    .slnav-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 7px 16px; cursor: pointer;
+      color: var(--text-2); font-size: 13px; font-weight: 400;
+      transition: background 0.1s; border-left: 2px solid transparent;
+    }
+    .slnav-item:hover { background: var(--surface2); color: var(--text-1); }
+    .slnav-item.active {
+      background: var(--accent-light); color: var(--accent); font-weight: 500;
+      border-left-color: var(--accent);
+    }
+    .slnav-count {
+      font-size: 10px; font-weight: 600;
+      background: var(--surface2); color: var(--text-3);
+      border-radius: 9999px; padding: 1px 7px; min-width: 20px; text-align: center;
+    }
+    .slnav-item.active .slnav-count {
+      background: rgba(3,105,161,0.18); color: var(--accent);
+    }
+    .slnav-divider {
+      height: 1px; background: var(--border); margin: 8px 0;
+    }
+
+    .signals-content {
+      flex: 1; overflow-y: auto; padding: 24px 28px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .signals-content-empty {
+      padding: 32px 20px; text-align: center;
+      border: 1px dashed var(--border2); border-radius: var(--radius);
+    }
+    .signals-content-empty-title { font-size: 13px; font-weight: 500; color: var(--text-3); margin-bottom: 4px; }
+    .signals-content-empty-sub { font-size: 12px; color: var(--text-3); }
+
+    /* ─── Lifecycle Chip Bar (Growth Pipeline) ───────────── */
+    .lifecycle-chip-bar {
+      display: flex; align-items: center; gap: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 20px; margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+    }
+    .lifecycle-chip {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .lifecycle-chip-pill {
+      font-size: 11px; font-weight: 500;
+      padding: 5px 14px; border-radius: 9999px;
+      border: 1.5px solid var(--border2);
+      color: var(--text-3); background: var(--surface2);
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .lifecycle-chip.active .lifecycle-chip-pill,
+    .lifecycle-chip:hover .lifecycle-chip-pill {
+      border-color: var(--accent); color: var(--accent);
+      background: var(--accent-light);
+    }
+    .lifecycle-chip-count {
+      font-size: 13px; font-weight: 600; color: var(--text-3); line-height: 1;
+    }
+    .lifecycle-chip.active .lifecycle-chip-count { color: var(--accent); }
+    .lifecycle-chip-sub { font-size: 9px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.4px; }
+    .lifecycle-chip-connector {
+      flex: 1; height: 1.5px; background: var(--border); min-width: 20px; max-width: 48px;
+      flex-shrink: 0; margin-bottom: 20px;
+    }
+
+    /* ─── Signals Feed ───────────────────────────────────── */
+    .signals-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 780px;
+    }
+
+    .feed-meta {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-bottom: 4px;
+    }
+
+    /* ─── Signal Context Strip ───────────────────────────── */
+    .signal-context-strip {
+      display: flex; gap: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 20px;
+    }
+    .scs-item {
+      flex: 1; padding: 12px 16px;
+      border-right: 1px solid var(--border);
+    }
+    .scs-item:last-child { border-right: none; }
+    .scs-value {
+      font-size: 17px; font-weight: 600; color: var(--text-1);
+      letter-spacing: -0.4px; line-height: 1; margin-bottom: 3px;
+    }
+    .scs-value.accent { color: var(--accent); }
+    .scs-value.warn   { color: #d97706; }
+    .scs-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.4px; }
+
+    /* ─── Market Detail Rows (inside signal card) ────────── */
+    .market-rows { display: flex; flex-direction: column; gap: 6px; }
+    .market-row {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 7px 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      gap: 10px;
+    }
+    .market-row-left { display: flex; align-items: center; gap: 8px; }
+    .market-row-name { font-size: 12px; font-weight: 500; color: var(--text-1); }
+    .market-row-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .market-row-stat {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+    }
+    .market-row-stat-val { font-size: 11px; font-weight: 500; color: var(--text-1); }
+    .market-row-stat-label { font-size: 9px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.3px; }
+
+    /* ─── Signal Card ────────────────────────────────────── */
+    .signal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: box-shadow 0.15s;
+    }
+    .signal-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.10); }
+
+    .signal-card.state-new { border-left: 3px solid #38bdf8; }
+    .signal-card.state-logged { border-left: 3px solid var(--border2); }
+    .signal-card.state-done { border-left: 3px solid #4ade80; }
+
+    .card-top {
+      padding: 18px 20px 14px;
+    }
+
+    .card-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .state-badge {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      border: 1px solid;
+    }
+    .state-badge.new {
+      color: #0369a1;
+      background: var(--state-new-bg);
+      border-color: var(--state-new-border);
+    }
+    .state-badge.logged {
+      color: var(--state-logged);
+      background: var(--state-logged-bg);
+      border-color: var(--state-logged-border);
+    }
+    .state-badge.done {
+      color: var(--state-done);
+      background: var(--state-done-bg);
+      border-color: var(--state-done-border);
+    }
+    .card-category {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card-headline {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-1);
+      line-height: 1.4;
+      letter-spacing: -0.2px;
+      margin-bottom: 14px;
+    }
+
+    .card-quote {
+      background: var(--surface2);
+      border-left: 3px solid var(--border2);
+      border-radius: 0 6px 6px 0;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+    }
+    .card-quote-text {
+      font-size: 13px;
+      color: var(--text-1);
+      line-height: 1.55;
+      font-style: italic;
+    }
+    .card-quote-source {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 5px;
+      font-style: normal;
+    }
+
+    .card-pattern {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .pattern-stat {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-1);
+    }
+    .pattern-trend {
+      font-size: 11px;
+      color: var(--text-3);
+    }
+    .pattern-trend.up { color: #dc2626; } /* only used for trend text, not as a background */
+    .pattern-trend.down { color: #16a34a; }
+
+    .card-context {
+      font-size: 12px;
+      color: var(--text-2);
+      line-height: 1.6;
+      margin-bottom: 0;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ─── Expandable body ────────────────────────────────── */
+    .card-expand-toggle {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      color: var(--text-2);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--sans);
+      transition: background 0.1s;
+    }
+    .card-expand-toggle:hover { background: var(--surface2); }
+    .toggle-label { display: flex; align-items: center; gap: 6px; }
+    .chevron {
+      width: 14px;
+      height: 14px;
+      transition: transform 0.2s;
+    }
+    .chevron.open { transform: rotate(180deg); }
+
+    .card-body {
+      display: none;
+      border-top: 1px solid var(--border);
+    }
+    .card-body.open { display: block; }
+
+    /* Hypotheses */
+    .hypotheses-section {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hypotheses-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+    .hypothesis-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      margin-bottom: 6px;
+      border: 1px solid transparent;
+      transition: background 0.1s, border-color 0.1s;
+    }
+    .hypothesis-option:hover { background: var(--surface2); }
+    .hypothesis-option.selected {
+      background: var(--accent-light);
+      border-color: rgba(3,105,161,0.20);
+    }
+    .hypothesis-option input[type="radio"] {
+      margin-top: 2px;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+    }
+    .hypothesis-text {
+      font-size: 12px;
+      color: var(--text-1);
+      line-height: 1.5;
+    }
+
+    /* Affected partners */
+    .affected-section {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .affected-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .partner-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .partner-chip {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-2);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 3px 9px;
+      border-radius: 9999px;
+    }
+
+    /* Action row */
+    .action-section {
+      padding: 14px 20px;
+    }
+    .action-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .action-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 140px;
+    }
+    .action-field label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .action-field input,
+    .action-field select {
+      font-family: var(--sans);
+      font-size: 12px;
+      color: var(--text-1);
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 7px 10px;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    .action-field input:focus,
+    .action-field select:focus {
+      border-color: var(--accent);
+      background: var(--surface);
+    }
+    .btn-log {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      color: #fff;
+      background: var(--accent);
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+      align-self: flex-end;
+    }
+    .btn-log:hover { opacity: 0.88; }
+
+    /* Dismiss row */
+    .dismiss-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .dismiss-label {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-right: 4px;
+    }
+    .btn-dismiss {
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--text-3);
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 9999px;
+      padding: 3px 10px;
+      cursor: pointer;
+      transition: color 0.1s, border-color 0.1s, background 0.1s;
+    }
+    .btn-dismiss:hover {
+      color: var(--text-1);
+      border-color: var(--text-3);
+      background: var(--surface);
+    }
+
+    /* Logged state overlay */
+    .logged-summary {
+      padding: 14px 20px;
+      background: var(--surface2);
+      border-top: 1px solid var(--border);
+    }
+    .logged-summary-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .logged-detail {
+      font-size: 12px;
+      color: var(--text-2);
+    }
+    .logged-detail strong {
+      color: var(--text-1);
+      font-weight: 500;
+    }
+
+    /* ─── Partners Table View ────────────────────────────── */
+    .view-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-1);
+      letter-spacing: -0.2px;
+      margin-bottom: 4px;
+    }
+    .view-desc {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-bottom: 20px;
+    }
+    .partners-table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    thead th {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 11px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    tbody td {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-2);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--surface2); }
+    td.td-name {
+      font-weight: 500;
+      color: var(--text-1);
+    }
+    .stage-pill {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+    .stage-pill.evaluating, .stage-pill.detected { color: var(--text-3); background: var(--surface2); border-color: var(--border2); }
+    .stage-pill.pilot      { color: #0369a1; background: #f0f9ff; border-color: #bae6fd; }
+    .stage-pill.live       { color: #15803d; background: #f0fdf4; border-color: #bbf7d0; }
+
+    .metric-good  { color: #15803d; font-weight: 500; }
+    .metric-warn  { color: #d97706; font-weight: 500; }
+    .metric-bad   { color: #dc2626; font-weight: 500; }
+
+    /* ─── Pipeline View ──────────────────────────────────── */
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .pipeline-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      box-shadow: var(--shadow);
+    }
+    .pipeline-card-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-1);
+      margin-bottom: 2px;
+    }
+    .pipeline-card-region {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-bottom: 12px;
+    }
+    .pipeline-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .pipeline-stat-label {
+      font-size: 11px;
+      color: var(--text-3);
+    }
+    .pipeline-stat-val {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-1);
+    }
+    .pipeline-stat-val.warn { color: #d97706; }
+    .pipeline-stat-val.ok   { color: #15803d; }
+    .pipeline-alert {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--text-2);
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      line-height: 1.5;
+    }
+
+    /* ─── Scrollbar ──────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+
+    /* ─── Stats Strip ────────────────────────────────────── */
+    .stats-strip {
+      display: flex;
+      align-items: stretch;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .stat-item { flex: 1; padding: 14px 18px; }
+    .stat-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-1);
+      letter-spacing: -0.5px;
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+    .stat-label { font-size: 11px; color: var(--text-3); }
+    .stat-divider { width: 1px; background: var(--border); flex-shrink: 0; }
+    .warn-text  { color: #d97706; }
+    .danger-text { color: #dc2626; }
+
+    /* ─── Filter Tabs ────────────────────────────────────── */
+    .filter-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+    .filter-tab {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-3);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 5px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.1s;
+    }
+    .filter-tab:hover { color: var(--text-1); border-color: var(--border2); background: var(--surface2); }
+    .filter-tab.active {
+      color: var(--accent); background: var(--accent-light);
+      border-color: rgba(3,105,161,0.20); font-weight: 500;
+    }
+    .filter-count { font-size: 10px; font-weight: 600; opacity: 0.7; }
+
+    /* ─── Engagement Bar ─────────────────────────────────── */
+    .eng-bar-wrap { display: flex; align-items: center; gap: 8px; }
+    .eng-bar-track {
+      width: 56px; height: 4px;
+      background: var(--surface2); border-radius: 9999px; overflow: hidden; flex-shrink: 0;
+    }
+    .eng-bar-fill { height: 100%; border-radius: 9999px; }
+    .eng-val { font-size: 12px; font-weight: 500; }
+
+    /* ─── Duration Badge ─────────────────────────────────── */
+    .duration-badge {
+      font-size: 10px; font-weight: 500;
+      padding: 2px 7px; border-radius: 9999px; border: 1px solid; white-space: nowrap;
+    }
+    .duration-badge.warn   { color: #d97706; background: rgba(217,119,6,0.08); border-color: rgba(217,119,6,0.25); }
+    .duration-badge.danger { color: #dc2626; background: rgba(220,38,38,0.08); border-color: rgba(220,38,38,0.20); }
+    .duration-badge.ok     { color: var(--text-3); background: var(--surface2); border-color: var(--border); }
+
+    /* ─── Signal Dot ─────────────────────────────────────── */
+    .signal-dot {
+      display: inline-block; width: 6px; height: 6px;
+      border-radius: 50%; background: #38bdf8;
+      margin-right: 4px; vertical-align: middle; flex-shrink: 0;
+    }
+
+    /* ─── Section Label Row ──────────────────────────────── */
+    .section-label-row {
+      font-size: 11px; font-weight: 500; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
+    }
+
+    /* ─── Enhanced Rep Cards ─────────────────────────────── */
+    .rep-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+    }
+    .rep-card-header { padding: 16px 18px 14px; border-bottom: 1px solid var(--border); }
+    .rep-name { font-size: 14px; font-weight: 600; color: var(--text-1); letter-spacing: -0.2px; margin-bottom: 2px; }
+    .rep-region { font-size: 11px; color: var(--text-3); margin-bottom: 12px; }
+    .rep-kpis { display: flex; gap: 20px; }
+    .rep-kpi { display: flex; flex-direction: column; gap: 3px; }
+    .rep-kpi-val {
+      font-size: 17px; font-weight: 600; color: var(--text-1);
+      letter-spacing: -0.3px; line-height: 1;
+    }
+    .rep-kpi-val.ok   { color: #15803d; }
+    .rep-kpi-val.warn { color: #d97706; }
+    .rep-kpi-val.bad  { color: #dc2626; }
+    .rep-kpi-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.4px; }
+    .rep-section { padding: 12px 18px; border-bottom: 1px solid var(--border); }
+    .rep-section-label {
+      font-size: 10px; font-weight: 500; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+    }
+    .portfolio-item { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
+    .portfolio-partner { font-size: 12px; font-weight: 500; color: var(--text-1); }
+    .portfolio-meta { display: flex; align-items: center; gap: 6px; }
+    .last-activity { font-size: 12px; color: var(--text-2); line-height: 1.5; }
+    .last-activity-date { font-size: 11px; color: var(--text-3); margin-bottom: 3px; }
+    .last-activity-outcome { font-size: 11px; color: var(--text-3); margin-top: 3px; font-style: italic; }
+    .lens-insight { padding: 12px 18px; background: var(--accent-light); border-top: 1px solid rgba(3,105,161,0.12); }
+    .lens-insight-label {
+      font-size: 10px; font-weight: 600; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px;
+    }
+    .lens-insight-text { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+
+    /* ─── Outcome Card ────────────────────────────────────── */
+    .outcome-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow);
+      overflow: hidden; max-width: 780px; margin-bottom: 16px;
+    }
+    .outcome-card-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+    .outcome-state-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .outcome-headline { font-size: 15px; font-weight: 600; color: var(--text-1); letter-spacing: -0.2px; line-height: 1.4; }
+    .outcome-decision { padding: 14px 20px; border-bottom: 1px solid var(--border); }
+    .outcome-decision-label {
+      font-size: 10px; font-weight: 500; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+    }
+    .outcome-decision-selected {
+      padding: 10px 14px; background: var(--accent-light);
+      border: 1px solid rgba(3,105,161,0.20); border-radius: 7px;
+      font-size: 12px; color: var(--text-1); line-height: 1.55; margin-bottom: 10px;
+    }
+    .outcome-meta-row { display: flex; gap: 20px; font-size: 12px; color: var(--text-2); flex-wrap: wrap; }
+    .outcome-meta-row strong { color: var(--text-1); font-weight: 500; }
+
+    /* ─── Timeline ────────────────────────────────────────── */
+    .timeline { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+    .timeline-label {
+      font-size: 10px; font-weight: 500; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px;
+    }
+    .timeline-items { position: relative; padding-left: 22px; }
+    .timeline-items::before {
+      content: ''; position: absolute;
+      left: 4px; top: 5px; bottom: 5px; width: 1px; background: var(--border);
+    }
+    .timeline-item { position: relative; margin-bottom: 18px; }
+    .timeline-item:last-child { margin-bottom: 0; }
+    .timeline-dot {
+      position: absolute; left: -18px; top: 4px;
+      width: 9px; height: 9px; border-radius: 50%;
+      border: 2px solid var(--border2); background: var(--surface);
+    }
+    .timeline-dot.filled { background: var(--accent); border-color: var(--accent); }
+    .timeline-dot.pending { background: var(--surface2); border-color: var(--border2); }
+    .timeline-date { font-size: 11px; font-weight: 500; color: var(--text-3); margin-bottom: 2px; }
+    .timeline-event { font-size: 13px; font-weight: 500; color: var(--text-1); }
+    .timeline-detail { font-size: 11px; color: var(--text-3); margin-top: 3px; line-height: 1.5; }
+
+    /* ─── Outcome Check-in Locked ────────────────────────── */
+    .checkin-locked {
+      padding: 14px 20px; background: var(--surface2);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .checkin-locked-label { font-size: 11px; color: var(--text-3); margin-bottom: 2px; }
+    .checkin-locked-date { font-size: 12px; font-weight: 500; color: var(--text-2); }
+    .btn-checkin-locked {
+      font-family: var(--sans); font-size: 11px; font-weight: 500;
+      color: var(--text-3); background: var(--surface);
+      border: 1px solid var(--border2); border-radius: 6px;
+      padding: 7px 14px; cursor: not-allowed; opacity: 0.6; white-space: nowrap;
+    }
+
+    /* ─── Expansion Category Cards ──────────────────────── */
+    .expansion-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 780px;
+    }
+    .expansion-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .expansion-card.stage-detected       { border-left: 3px solid #38bdf8; }
+    .expansion-card.stage-decision-logged { border-left: 3px solid #0369a1; }
+    .expansion-card.stage-acting          { border-left: 3px solid #f59e0b; }
+    .expansion-card.stage-checkin         { border-left: 3px solid #4ade80; }
+
+    .expansion-card-top { padding: 18px 20px 14px; }
+    .expansion-meta-row {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 10px;
+    }
+    .expansion-stage-pill {
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.5px; padding: 3px 8px;
+      border-radius: 9999px; border: 1px solid;
+    }
+    .expansion-stage-pill.detected {
+      color: #0369a1; background: #f0f9ff; border-color: #bae6fd;
+    }
+    .expansion-stage-pill.decision-logged {
+      color: #1e40af; background: #eff6ff; border-color: #bfdbfe;
+    }
+    .expansion-stage-pill.acting {
+      color: #92400e; background: #fffbeb; border-color: #fde68a;
+    }
+    .expansion-stage-pill.checkin {
+      color: #15803d; background: #f0fdf4; border-color: #bbf7d0;
+    }
+    .expansion-headline {
+      font-size: 15px; font-weight: 600; color: var(--text-1);
+      letter-spacing: -0.2px; line-height: 1.4; margin-bottom: 4px;
+    }
+    .expansion-subtitle {
+      font-size: 12px; color: var(--text-3); margin-bottom: 14px;
+    }
+    .expansion-evidence {
+      display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px;
+    }
+    .evidence-count {
+      font-size: 22px; font-weight: 600; color: var(--text-1);
+      letter-spacing: -0.5px; line-height: 1;
+    }
+    .evidence-label { font-size: 11px; color: var(--text-3); }
+    .evidence-trend {
+      font-size: 11px; font-weight: 500;
+      color: #d97706; margin-left: 2px;
+    }
+    .expansion-quote {
+      background: var(--surface2); border-left: 3px solid var(--border2);
+      border-radius: 0 6px 6px 0; padding: 10px 14px; margin-bottom: 14px;
+    }
+    .expansion-quote-text {
+      font-size: 13px; color: var(--text-1);
+      line-height: 1.55; font-style: italic;
+    }
+    .expansion-quote-source {
+      font-size: 11px; color: var(--text-3); margin-top: 5px;
+    }
+    .expansion-markets {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;
+    }
+    .expansion-market-label {
+      font-size: 10px; font-weight: 500; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+    }
+    .expansion-lens {
+      padding: 14px 20px;
+      background: var(--accent-light);
+      border-top: 1px solid rgba(3,105,161,0.12);
+    }
+    .expansion-lens-label {
+      font-size: 10px; font-weight: 600; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px;
+    }
+    .expansion-lens-text {
+      font-size: 12px; color: var(--text-2); line-height: 1.6;
+    }
+
+    /* ─── Evidence Panel ────────────────────────────────── */
+    .evidence-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.18);
+      z-index: 100;
+    }
+    .evidence-overlay.open { display: block; }
+
+    .evidence-panel {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: 380px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      box-shadow: -6px 0 24px rgba(0,0,0,0.10);
+      z-index: 101;
+      transform: translateX(100%);
+      transition: transform 0.22s ease;
+      display: flex; flex-direction: column;
+    }
+    .evidence-panel.open { transform: translateX(0); }
+
+    .evidence-panel-header {
+      padding: 18px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start;
+      justify-content: space-between; flex-shrink: 0;
+    }
+    .evidence-panel-title {
+      font-size: 13px; font-weight: 600; color: var(--text-1);
+      letter-spacing: -0.2px; margin-bottom: 3px;
+    }
+    .evidence-panel-meta { font-size: 11px; color: var(--text-3); }
+    .evidence-close-btn {
+      background: none; border: 1px solid var(--border);
+      border-radius: 6px; cursor: pointer;
+      color: var(--text-3); font-size: 12px;
+      width: 26px; height: 26px; padding: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      line-height: 1;
+      flex-shrink: 0; margin-left: 12px; margin-top: 1px;
+      transition: color 0.1s, border-color 0.1s;
+    }
+    .evidence-close-btn:hover { color: var(--text-1); border-color: var(--text-3); }
+
+    .evidence-panel-body {
+      flex: 1; overflow-y: auto; padding: 14px 16px;
+    }
+    .evidence-quote-item {
+      padding: 12px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .evidence-quote-item:last-child { margin-bottom: 0; }
+    .evidence-quote-body {
+      font-size: 13px; color: var(--text-1);
+      line-height: 1.6; font-style: italic; margin-bottom: 9px;
+    }
+    .evidence-quote-footer {
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    }
+    .evidence-quote-market {
+      font-size: 10px; font-weight: 500; color: var(--text-2);
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 2px 8px; border-radius: 9999px;
+    }
+    .evidence-quote-ticket { font-size: 10px; color: var(--text-3); }
+
+    /* ─── Signal Quote CTA ───────────────────────────────── */
+    .card-quotes-cta {
+      display: flex; align-items: center; gap: 5px;
+      width: 100%; background: none; border: none;
+      border-top: 1px solid var(--border);
+      padding: 9px 20px;
+      font-family: var(--sans); font-size: 11px; font-weight: 500;
+      color: var(--accent); cursor: pointer;
+      transition: background 0.1s;
+      text-align: left;
+    }
+    .card-quotes-cta:hover { background: var(--accent-light); }
+    .card-quotes-cta svg { flex-shrink: 0; }
+
+    /* ─── Pattern A · "See sources in Data Center" ───────────
+       Lives ONLY inside the evidence side-panel header, directly
+       below the meta subtitle. We never surface this link on the
+       card itself — the reader has to signal intent by clicking
+       "View N customer quotes" first. Teal because this is the
+       Sendbird brand anchor and a cross-workspace bridge, not
+       an in-product action.
+    ─────────────────────────────────────────────────────────── */
+    .evidence-dc-link {
+      display: inline-flex; align-items: center; gap: 5px;
+      margin-top: 9px;
+      padding: 5px 10px;
+      font-family: var(--sans); font-size: 11px; font-weight: 500;
+      color: var(--teal);
+      background: var(--teal-light);
+      border: 1px solid transparent;
+      border-radius: 6px;
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      transition: background 0.1s, border-color 0.1s, color 0.1s;
+    }
+    .evidence-dc-link:hover {
+      background: rgba(13,148,136,0.14);
+      border-color: rgba(13,148,136,0.30);
+      color: #0f766e;
+    }
+    .evidence-dc-link svg { flex-shrink: 0; opacity: 0.8; }
+    .evidence-dc-link:hover svg { opacity: 1; }
+
+    /* ─── Lifecycle Strip ────────────────────────────────── */
+    .lifecycle-strip {
+      display: flex; align-items: center; gap: 0;
+      padding: 10px 0 14px; flex-wrap: nowrap; overflow-x: auto;
+    }
+    .lifecycle-step {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      flex-shrink: 0;
+    }
+    .lifecycle-step-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      border: 2px solid var(--border2);
+      background: var(--surface);
+    }
+    .lifecycle-step.done .lifecycle-step-dot {
+      background: var(--accent); border-color: var(--accent);
+    }
+    .lifecycle-step.current .lifecycle-step-dot {
+      background: #0369a1; border-color: #0369a1;
+      box-shadow: 0 0 0 3px rgba(3,105,161,0.15);
+    }
+    .lifecycle-step-label {
+      font-size: 9px; font-weight: 500; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap;
+    }
+    .lifecycle-step.done .lifecycle-step-label { color: var(--accent); }
+    .lifecycle-step.current .lifecycle-step-label { color: #0369a1; font-weight: 600; }
+    .lifecycle-connector {
+      width: 28px; height: 2px; background: var(--border);
+      flex-shrink: 0; margin-bottom: 12px;
+    }
+    .lifecycle-connector.done { background: var(--accent); }
+
+    /* ─── Empty Section ──────────────────────────────────── */
+    .empty-section {
+      padding: 30px 20px; text-align: center;
+      border: 1px dashed var(--border2); border-radius: var(--radius); max-width: 780px;
+    }
+    .empty-section-title { font-size: 13px; font-weight: 500; color: var(--text-3); margin-bottom: 4px; }
+    .empty-section-sub { font-size: 12px; color: var(--text-3); }
+
+    /* (old pill tab switcher removed — replaced by .view-tab-bar) */
+
+    /* ─── Chat Category Cards ───────────────────────────────── */
+    .chat-summary-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .chat-summary-title { font-size: 12px; font-weight: 500; color: var(--text-2); }
+    .chat-summary-meta { font-size: 11px; color: var(--text-3); }
+
+    .chat-category-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .chat-category-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 16px;
+      box-shadow: var(--shadow-sm);
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+    .chat-category-rank {
+      font-size: 17px; font-weight: 600; color: var(--border2);
+      line-height: 1; margin-top: 1px; min-width: 20px; flex-shrink: 0;
+    }
+    .chat-category-rank.top { color: var(--text-3); }
+    .chat-category-body { flex: 1; min-width: 0; }
+    .chat-category-name {
+      font-size: 13px; font-weight: 500; color: var(--text-1);
+      line-height: 1.4; margin-bottom: 10px;
+    }
+    .chat-category-stats {
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .chat-stat { display: flex; flex-direction: column; gap: 2px; }
+    .chat-stat-val {
+      font-size: 14px; font-weight: 600; color: var(--text-1); line-height: 1;
+    }
+    .chat-stat-val.warn   { color: #d97706; }
+    .chat-stat-val.danger { color: #dc2626; }
+    .chat-stat-label {
+      font-size: 9px; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .workaround-bar-row { display: flex; align-items: center; gap: 7px; }
+    .workaround-bar-track {
+      width: 60px; height: 4px;
+      background: var(--surface2); border-radius: 9999px; overflow: hidden;
+    }
+    .workaround-bar-fill {
+      height: 100%; border-radius: 9999px;
+    }
+    .workaround-bar-fill.ok     { background: #94a3b8; }
+    .workaround-bar-fill.warn   { background: #d97706; }
+    .workaround-bar-fill.danger { background: #dc2626; }
+    .chat-lens-note {
+      margin-top: 16px; padding: 12px 14px;
+      background: var(--accent-light); border: 1px solid rgba(3,105,161,0.15);
+      border-radius: 8px;
+    }
+    .chat-lens-note-label {
+      font-size: 10px; font-weight: 600; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px;
+    }
+    .chat-lens-note-text { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ═══════════════════════════════════════════════
+       TOP GNB
+  ═══════════════════════════════════════════════ -->
+  <header class="gnb">
+    <div class="gnb-left">
+      <div class="gnb-logo-mark">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8" cy="8" r="3"/>
+          <path d="M8 1v2M8 13v2M1 8h2M13 8h2"/>
+        </svg>
+      </div>
+      <div class="gnb-wordmark-stack">
+        <div class="gnb-wordmark">lens<span>.ai</span></div>
+        <div class="gnb-wordmark-sub">Agentic signal detection · Sendbird-native</div>
+      </div>
+    </div>
+    <div class="gnb-right">
+      <a class="gnb-cross-link" href="../Data Center/index.html">↗ Data Center</a>
+      <div class="gnb-user-name">Young</div>
+      <div class="gnb-avatar">Y</div>
+    </div>
+  </header>
+
+  <div class="app-body">
+
+  <!-- ═══════════════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════════════ -->
+  <aside class="sidebar">
+
+    <div class="sidebar-client">
+      <div class="client-label">Client</div>
+      <div class="client-name">Zestly</div>
+      <div class="client-meta">Food delivery platform</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Workspace</div>
+
+      <div class="nav-item active" data-view="signals">
+        <div class="nav-item-left">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M13 2H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h2.5l2.5 3 2.5-3H13a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/>
+          </svg>
+          Chat
+        </div>
+        <span class="nav-badge muted">52</span>
+      </div>
+
+      <div class="nav-item" data-view="pipeline">
+        <div class="nav-item-left">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="8" r="6"/>
+            <path d="M8 5v3l2 1.5"/>
+          </svg>
+          Signals
+        </div>
+        <span class="nav-badge" id="signals-count">3</span>
+      </div>
+
+      <div class="nav-section-label">Outcomes</div>
+
+      <div class="nav-item" data-view="outcomes">
+        <div class="nav-item-left">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M3 8l3.5 3.5L13 4"/>
+          </svg>
+          Tracked Outcomes
+        </div>
+        <span class="nav-badge muted">0</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="footer-sendbird">
+        <div class="sendbird-dot"></div>
+        <div class="footer-label">Built on <strong>Sendbird</strong> Chat + Desk data</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- ── Chat View ───────────────────────── -->
+    <div class="view active" id="view-signals">
+      <div class="view-header">
+        <div class="view-header-top">
+          <div class="view-header-title">Chat</div>
+          <div class="view-header-chips">
+            <span class="header-pill">~50K Sendbird Chat sessions daily · 16 markets</span>
+            <a class="header-dc-link"
+               href="../Data Center/index.html#workspace=lens&view=raw"
+               title="Open the full, unfiltered source corpus in the Data Center">
+              See full source corpus in Data Center
+              <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M3 8 L8 3 M4.2 3 L8 3 L8 6.8"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="view-scroll-body">
+        <div class="signal-context-strip" style="margin-bottom:20px">
+          <div class="scs-item">
+            <div class="scs-value accent">~50K</div>
+            <div class="scs-label">Daily Sendbird Chat sessions</div>
+          </div>
+          <div class="scs-item">
+            <div class="scs-value">16</div>
+            <div class="scs-label">Markets tracked</div>
+          </div>
+          <div class="scs-item">
+            <div class="scs-value">324</div>
+            <div class="scs-label">Demand mentions · 30d</div>
+          </div>
+          <div class="scs-item">
+            <div class="scs-value warn">0</div>
+            <div class="scs-label">Escalated to product/growth</div>
+          </div>
+        </div>
+        <div class="chat-summary-header">
+          <div class="chat-summary-title">CS ticket categories · last 30 days</div>
+          <div class="chat-summary-meta" id="chat-summary-meta"></div>
+        </div>
+        <div class="chat-category-list" id="chat-category-list"></div>
+        <div class="chat-lens-note">
+          <div class="chat-lens-note-label">LENs sees</div>
+          <div class="chat-lens-note-text" id="chat-lens-text"></div>
+        </div>
+      </div>
+
+      <!-- signal cards are now in view-pipeline / Signals view -->
+      <div style="display:none">
+
+        <!-- ════════════════════════════════════
+             SIGNAL 1: Convenience Retail demand
+        ════════════════════════════════════ -->
+        <div class="signal-card state-new" id="card-sig001">
+          <div class="card-top">
+            <div class="card-meta-row">
+              <span class="state-badge new">New Signal</span>
+              <span class="card-category">Demand / Expansion · SIG-001</span>
+            </div>
+            <div class="card-headline">
+              Customers are treating Zestly like a convenience errand service
+            </div>
+            <div class="card-quote">
+              <div class="card-quote-text">"Can you stop at CVS on the way and grab me some ibuprofen? I'll add $5 to the tip."</div>
+              <div class="card-quote-source">Sendbird Desk · Denver Pilot · CS-1302 · Apr 2</div>
+            </div>
+            <div class="card-pattern">
+              <span class="pattern-stat" data-sig="sig001" data-sessions="214" data-verb="mentioned" data-topic="convenience retail items">— customer messages across 214 sessions mentioned convenience retail items in last 30 days</span>
+              <span class="pattern-trend up">↑ +591% from Q4 2025 (31 sessions)</span>
+            </div>
+            <div class="card-context">
+              These aren't complaints — customers are probing the product boundary. CS is logging them as "not in scope" and closing, without routing a single mention to product or growth. The pattern is concentrated across 6 of 8 pilot cities, but absent from live markets entirely. That gap suggests it surfaces early, when customers first test what Zestly can do for them.
+            </div>
+
+            <div class="lifecycle-strip">
+              <div class="lifecycle-step current">
+                <div class="lifecycle-step-dot"></div>
+                <div class="lifecycle-step-label">Detected</div>
+              </div>
+              <div class="lifecycle-connector"></div>
+              <div class="lifecycle-step">
+                <div class="lifecycle-step-dot"></div>
+                <div class="lifecycle-step-label">Under Review</div>
+              </div>
+              <div class="lifecycle-connector"></div>
+              <div class="lifecycle-step">
+                <div class="lifecycle-step-dot"></div>
+                <div class="lifecycle-step-label">Decision Logged</div>
+              </div>
+              <div class="lifecycle-connector"></div>
+              <div class="lifecycle-step">
+                <div class="lifecycle-step-dot"></div>
+                <div class="lifecycle-step-label">Check-in</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="card-quotes-cta" onclick="openEvidencePanel('sig001')">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M2 3.5h9M2 6.5h6M2 9.5h4"/>
+            </svg>
+            View messages
+          </button>
+
+          <button class="card-expand-toggle" onclick="toggleCard('sig001')">
+            <span class="toggle-label">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="7" cy="7" r="5.5"/>
+                <path d="M7 4.5v3l1.5 1"/>
+              </svg>
+              Explore this signal
+            </span>
+            <svg class="chevron" id="chevron-sig001" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 5l4 4 4-4"/>
+            </svg>
+          </button>
+
+          <div class="card-body" id="body-sig001">
+            <div class="hypotheses-section">
+              <div class="hypotheses-label">What does this signal mean for Zestly?</div>
+              <label class="hypothesis-option" onclick="selectHypothesis(this, 'sig001')">
+                <input type="radio" name="hyp-sig001" value="a">
+                <span class="hypothesis-text">Customers already see Zestly drivers as a general errand layer — convenience stops are a natural low-friction adjacency that doesn't require changing the core product</span>
+              </label>
+              <label class="hypothesis-option" onclick="selectHypothesis(this, 'sig001')">
+                <input type="radio" name="hyp-sig001" value="b">
+                <span class="hypothesis-text">This is a premium tier signal — the customers asking aren't price-sensitive, they're testing whether Zestly can replace more of their errands</span>
+              </label>
+              <label class="hypothesis-option" onclick="selectHypothesis(this, 'sig001')">
+                <input type="radio" name="hyp-sig001" value="c">
+                <span class="hypothesis-text">The demand is real but operationally premature — driver routing, item pricing, and retail partner agreements all need solving before piloting this</span>
+              </label>
+            </div>
+
+            <div class="affected-section">
+              <div class="affected-label">Signal Markets</div>
+              <div class="market-rows" id="market-rows-sig001"></div>
+            </div>
+
+            <div class="action-section">
+              <div class="action-row">
+                <div class="action-field">
+                  <label>Assign Owner</label>
+                  <input type="text" id="owner-sig001" placeholder="e.g. Growth Team" />
+                </div>
+                <div class="action-field" style="max-width:160px;">
+                  <label>Due Date</label>
+                  <input type="date" id="due-sig001" />
+                </div>
+                <button class="btn-log" onclick="logDecision('sig001')">Log Decision</button>
+              </div>
+            </div>
+
+            <div class="dismiss-row">
+              <span class="dismiss-label">Dismiss:</span>
+              <button class="btn-dismiss" onclick="dismissCard('sig001', 'knew')">Already knew this</button>
+              <button class="btn-dismiss" onclick="dismissCard('sig001', 'resolved')">Not pursuing</button>
+              <button class="btn-dismiss" onclick="dismissCard('sig001', 'irrelevant')">Not relevant</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════
+             SIGNAL 2: Grocery add-on demand
+        ════════════════════════════════════ -->
+        <div class="signal-card state-new" id="card-sig002">
+          <div class="card-top">
+            <div class="card-meta-row">
+              <span class="state-badge new">New Signal</span>
+              <span class="card-category">Demand / Expansion · SIG-002</span>
+            </div>
+            <div class="card-headline">
+              Live market customers are asking Zestly to replace their grocery run
+            </div>
+            <div class="card-quote">
+              <div class="card-quote-text">"Could the driver grab a carton of eggs from the store on the way? I know it's not on the menu, I figured I'd ask."</div>
+              <div class="card-quote-source">Sendbird Desk · New York Live · CS-1318 · Apr 5</div>
+            </div>
+            <div class="card-pattern">
+              <span class="pattern-stat" data-sig="sig002" data-sessions="87" data-verb="requested" data-topic="grocery or fresh produce items">— customer messages across 87 sessions requested grocery or fresh produce items in last 30 days</span>
+              <span class="pattern-trend">78 of 87 from live markets · NY alone: 48 mentions</span>
+            </div>
+            <div class="card-context">
+              The live market concentration is the signal inside the signal. Customers who've ordered 10+ times are starting to use Zestly like a general delivery layer — not first-timers. The NY mention volume (48) is larger than the total convenience retail signal from 6 pilot cities combined. CS is closing all of these as "out of scope." None are reaching product or growth.
+            </div>
+
+            <div class="lifecycle-strip">
+              <div class="lifecycle-step current">
+                <div class="lifecycle-step-dot"></div>
+                <div class="lifecycle-step-label">Detected</div>
+              </div>
+              <div class="lifecycle-connector"></div>
+              <div class="lifecycle-step">
+                <div class="lifecycle-step-dot"></div>
+                <div class="lifecycle-step-label">Under Review</div>
+              </div>
+              <div class="lifecycle-connector"></div>
+              <div class="lifecycle-step">
+                <div class="lifecycle-step-dot"></div>
+                <div class="lifecycle-step-label">Decision Logged</div>
+              </div>
+              <div class="lifecycle-connector"></div>
+              <div class="lifecycle-step">
+                <div class="lifecycle-step-dot"></div>
+                <div class="lifecycle-step-label">Check-in</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="card-quotes-cta" onclick="openEvidencePanel('sig002')">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M2 3.5h9M2 6.5h6M2 9.5h4"/>
+            </svg>
+            View messages
+          </button>
+
+          <button class="card-expand-toggle" onclick="toggleCard('sig002')">
+            <span class="toggle-label">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="7" cy="7" r="5.5"/>
+                <path d="M7 4.5v3l1.5 1"/>
+              </svg>
+              Explore this signal
+            </span>
+            <svg class="chevron" id="chevron-sig002" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 5l4 4 4-4"/>
+            </svg>
+          </button>
+
+          <div class="card-body" id="body-sig002">
+            <div class="hypotheses-section">
+              <div class="hypotheses-label">What does this signal mean for Zestly?</div>
+              <label class="hypothesis-option" onclick="selectHypothesis(this, 'sig002')">
+                <input type="radio" name="hyp-sig002" value="a">
+                <span class="hypothesis-text">High-frequency users have built enough trust to use Zestly for fresh food — this is a loyalty signal that mirrors how DoorDash and Uber Eats expanded into grocery</span>
+              </label>
+              <label class="hypothesis-option" onclick="selectHypothesis(this, 'sig002')">
+                <input type="radio" name="hyp-sig002" value="b">
+                <span class="hypothesis-text">Live market engagement is driving category blur — customers who order twice a week stop thinking in "restaurant delivery" terms</span>
+              </label>
+              <label class="hypothesis-option" onclick="selectHypothesis(this, 'sig002')">
+                <input type="radio" name="hyp-sig002" value="c">
+                <span class="hypothesis-text">Grocery requires a different fulfillment model — store partnerships, item-picking UX, substitution logic — pursue demand validation before committing to operations</span>
+              </label>
+            </div>
+
+            <div class="affected-section">
+              <div class="affected-label">Signal Markets</div>
+              <div class="market-rows" id="market-rows-sig002"></div>
+            </div>
+
+            <div class="action-section">
+              <div class="action-row">
+                <div class="action-field">
+                  <label>Assign Owner</label>
+                  <input type="text" id="owner-sig002" placeholder="e.g. Product / Partnerships" />
+                </div>
+                <div class="action-field" style="max-width:160px;">
+                  <label>Due Date</label>
+                  <input type="date" id="due-sig002" />
+                </div>
+                <button class="btn-log" onclick="logDecision('sig002')">Log Decision</button>
+              </div>
+            </div>
+
+            <div class="dismiss-row">
+              <span class="dismiss-label">Dismiss:</span>
+              <button class="btn-dismiss" onclick="dismissCard('sig002', 'knew')">Already knew this</button>
+              <button class="btn-dismiss" onclick="dismissCard('sig002', 'resolved')">Not pursuing</button>
+              <button class="btn-dismiss" onclick="dismissCard('sig002', 'irrelevant')">Not relevant</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════
+             SIGNAL 3: On-Demand Chef (pre-logged demo)
+        ════════════════════════════════════ -->
+        <div class="signal-card state-logged" id="card-sig003">
+          <div class="card-top">
+            <div class="card-meta-row">
+              <span class="state-badge logged">Decision Logged</span>
+              <span class="card-category">Demand / Expansion · SIG-003</span>
+            </div>
+            <div class="card-headline">
+              A premium cluster is asking for something Zestly has never offered
+            </div>
+            <div class="card-quote">
+              <div class="card-quote-text">"This is probably a weird ask but — do you have anything where a chef comes to your place and cooks? Like a private chef type thing?"</div>
+              <div class="card-quote-source">Sendbird Desk · San Francisco Live · CS-1334 · Apr 8</div>
+            </div>
+            <div class="card-pattern">
+              <span class="pattern-stat" data-sig="sig003" data-sessions="23" data-verb="mentioned" data-topic="private chef, home cook, or on-demand cooking">— customer messages across 23 sessions mentioned private chef, home cook, or on-demand cooking in last 30 days</span>
+              <span class="pattern-trend">All from SF (14) and NY (9) · avg surrounding order value 2.4× market</span>
+            </div>
+            <div class="card-context">
+              Low volume, but the customer profile is unlike anything else in the data. These are Zestly's highest-value users — not first-timers, not price-sensitive. They're asking for something no competitor offers as a structured product. LENs flagged this as a signal worth watching, not acting on yet.
+            </div>
+
+            <div class="lifecycle-strip">
+              <div class="lifecycle-step done">
+                <div class="lifecycle-step-dot"></div>
+                <div class="lifecycle-step-label">Detected</div>
+              </div>
+              <div class="lifecycle-connector done"></div>
+              <div class="lifecycle-step done">
+                <div class="lifecycle-step-dot"></div>
+                <div class="lifecycle-step-label">Under Review</div>
+              </div>
+              <div class="lifecycle-connector done"></div>
+              <div class="lifecycle-step current">
+                <div class="lifecycle-step-dot"></div>
+                <div class="lifecycle-step-label">Decision Logged</div>
+              </div>
+              <div class="lifecycle-connector"></div>
+              <div class="lifecycle-step">
+                <div class="lifecycle-step-dot"></div>
+                <div class="lifecycle-step-label">Check-in</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="card-quotes-cta" onclick="openEvidencePanel('sig003')">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M2 3.5h9M2 6.5h6M2 9.5h4"/>
+            </svg>
+            View messages
+          </button>
+
+          <button class="card-expand-toggle" onclick="toggleCard('sig003')">
+            <span class="toggle-label">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M3 8l3.5 3.5L11 4"/>
+              </svg>
+              View logged decision
+            </span>
+            <svg class="chevron" id="chevron-sig003" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 5l4 4 4-4"/>
+            </svg>
+          </button>
+
+          <div class="card-body" id="body-sig003">
+            <div class="hypotheses-section">
+              <div class="hypotheses-label">Interpretation selected</div>
+              <label class="hypothesis-option selected">
+                <input type="radio" name="hyp-sig003" value="a" checked>
+                <span class="hypothesis-text">Distinct premium customer segment — not typical Zestly users, but high-value early adopters concentrated in two markets asking Zestly to become something new</span>
+              </label>
+              <label class="hypothesis-option" style="opacity:0.5;">
+                <input type="radio" name="hyp-sig003" value="b" disabled>
+                <span class="hypothesis-text">Category confusion — customers who think of Zestly as a general concierge service, not specifically restaurant delivery</span>
+              </label>
+              <label class="hypothesis-option" style="opacity:0.5;">
+                <input type="radio" name="hyp-sig003" value="c" disabled>
+                <span class="hypothesis-text">Volume too low to be actionable — interesting noise, not a real signal yet</span>
+              </label>
+            </div>
+
+            <div class="affected-section">
+              <div class="affected-label">Signal Markets</div>
+              <div class="market-rows" id="market-rows-sig003"></div>
+            </div>
+
+            <div class="logged-summary">
+              <div class="logged-summary-label">Decision logged Apr 8, 2026</div>
+              <div class="logged-detail">
+                Owner: <strong>Head of Product</strong> &nbsp;·&nbsp;
+                Due: <strong>May 15, 2026</strong>
+              </div>
+              <div class="logged-detail" style="margin-top:4px; color:var(--text-3);">
+                Monitor SF + NY signal for 90 days — if volume doubles by Q3, escalate to roadmap evaluation
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /hidden placeholder -->
+    </div><!-- /view-signals (Chat) -->
+
+    <!-- ── Markets View (hidden — data migrated to Signals) ── -->
+    <div class="view" id="view-partners" style="display:none!important">
+      <div class="view-title">Markets</div>
+      <div class="view-desc">16 cities · demand signals emerging from Sendbird CS chat · Apr 10, 2026</div>
+
+      <div class="stats-strip">
+        <div class="stat-item">
+          <div class="stat-value">3</div>
+          <div class="stat-label">Evaluating</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-value" style="color:#0369a1">8</div>
+          <div class="stat-label">Pilot</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-value" style="color:#15803d">5</div>
+          <div class="stat-label">Live</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-value">324</div>
+          <div class="stat-label">Demand mentions · 30 days</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-value warn-text">0</div>
+          <div class="stat-label">Routed to product / growth</div>
+        </div>
+      </div>
+
+      <div class="filter-tabs" id="partner-filter-tabs">
+        <button class="filter-tab active" data-filter="all">All <span class="filter-count">16</span></button>
+        <button class="filter-tab" data-filter="evaluating">Evaluating <span class="filter-count">3</span></button>
+        <button class="filter-tab" data-filter="pilot">Pilot <span class="filter-count">8</span></button>
+        <button class="filter-tab" data-filter="live">Live <span class="filter-count">5</span></button>
+      </div>
+
+      <div class="partners-table-wrap">
+        <table id="partners-table">
+          <thead>
+            <tr>
+              <th>Market</th>
+              <th>Stage</th>
+              <th>Duration</th>
+              <th>Daily Chats</th>
+              <th>Demand Mentions</th>
+              <th>Top Demand Signal</th>
+              <th>Launch Manager</th>
+              <th>Signals</th>
+            </tr>
+          </thead>
+          <tbody id="partners-tbody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Signals View ──────────────────────── -->
+    <div class="view" id="view-pipeline">
+      <div class="view-header">
+        <div class="view-header-top">
+          <div class="view-header-title">Signals</div>
+          <div class="view-header-chips">
+            <span class="header-pill">324 demand mentions · last 30d</span>
+            <span class="header-pill accent" id="open-signals-pill">2 open signals</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lifecycle left nav + signal cards -->
+      <div class="signals-layout">
+        <div class="signals-left-nav">
+          <div class="slnav-section-label">Lifecycle</div>
+          <div class="slnav-item active" data-filter="detected" onclick="filterSignals('detected')">
+            <span>Detected</span>
+            <span class="slnav-count" id="slnav-count-detected">2</span>
+          </div>
+          <div class="slnav-item" data-filter="under-review" onclick="filterSignals('under-review')">
+            <span>Under Review</span>
+            <span class="slnav-count" id="slnav-count-under-review">0</span>
+          </div>
+          <div class="slnav-item" data-filter="decision-logged" onclick="filterSignals('decision-logged')">
+            <span>Decision Logged</span>
+            <span class="slnav-count" id="slnav-count-decision-logged">1</span>
+          </div>
+          <div class="slnav-item" data-filter="check-in" onclick="filterSignals('check-in')">
+            <span>Check-in</span>
+            <span class="slnav-count" id="slnav-count-check-in">0</span>
+          </div>
+          <div class="slnav-divider"></div>
+          <div class="slnav-section-label">All</div>
+          <div class="slnav-item" data-filter="all" onclick="filterSignals('all')">
+            <span>All Signals</span>
+            <span class="slnav-count" id="slnav-count-all">3</span>
+          </div>
+        </div>
+
+        <div class="signals-content" id="signals-content">
+          <div class="feed-meta" id="signals-feed-meta">2 detected · 1 decision logged</div>
+
+          <!-- SIG-001 -->
+          <div class="signal-card state-new" id="card-sig001">
+            <div class="card-top">
+              <div class="card-meta-row">
+                <span class="state-badge new">New Signal</span>
+                <span class="card-category">Demand / Expansion · SIG-001</span>
+              </div>
+              <div class="card-headline">Customers are treating Zestly like a convenience errand service</div>
+              <div class="card-quote">
+                <div class="card-quote-text">"Can you stop at CVS on the way and grab me some ibuprofen? I'll add $5 to the tip."</div>
+                <div class="card-quote-source">Sendbird Desk · Denver Pilot · CS-1302 · Apr 2</div>
+              </div>
+              <div class="card-pattern">
+                <span class="pattern-stat" data-sig="sig001" data-sessions="214" data-verb="mentioned" data-topic="convenience retail items">— customer messages across 214 sessions mentioned convenience retail items in last 30 days</span>
+                <span class="pattern-trend up">↑ +591% from Q4 2025 (31 sessions)</span>
+              </div>
+              <div class="card-context">These aren't complaints — customers are probing the product boundary. CS is logging them as "not in scope" and closing, without routing a single mention to product or growth. The pattern is concentrated across 6 of 8 pilot cities, but absent from live markets entirely.</div>
+              <div class="lifecycle-strip">
+                <div class="lifecycle-step current"><div class="lifecycle-step-dot"></div><div class="lifecycle-step-label">Detected</div></div>
+                <div class="lifecycle-connector"></div>
+                <div class="lifecycle-step"><div class="lifecycle-step-dot"></div><div class="lifecycle-step-label">Under Review</div></div>
+                <div class="lifecycle-connector"></div>
+                <div class="lifecycle-step"><div class="lifecycle-step-dot"></div><div class="lifecycle-step-label">Decision Logged</div></div>
+                <div class="lifecycle-connector"></div>
+                <div class="lifecycle-step"><div class="lifecycle-step-dot"></div><div class="lifecycle-step-label">Check-in</div></div>
+              </div>
+            </div>
+            <button class="card-quotes-cta" onclick="openEvidencePanel('sig001')"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5h9M2 6.5h6M2 9.5h4"/></svg> View messages</button>
+            <a class="card-chat-link" href="#" onclick="switchToChat();return false;"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1h10v7H7l-3 2V8H1z"/></svg> View customer messages from Sendbird Chat</a>
+            <button class="card-expand-toggle" onclick="toggleCard('sig001')">
+              <span class="toggle-label"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5.5"/><path d="M7 4.5v3l1.5 1"/></svg> Explore this signal</span>
+              <svg class="chevron" id="chevron-sig001" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5l4 4 4-4"/></svg>
+            </button>
+            <div class="card-body" id="body-sig001">
+              <div class="hypotheses-section">
+                <div class="hypotheses-label">What does this signal mean for Zestly?</div>
+                <label class="hypothesis-option" onclick="selectHypothesis(this, 'sig001')"><input type="radio" name="hyp-sig001" value="a"><span class="hypothesis-text">Customers already see Zestly drivers as a general errand layer — convenience stops are a natural low-friction adjacency</span></label>
+                <label class="hypothesis-option" onclick="selectHypothesis(this, 'sig001')"><input type="radio" name="hyp-sig001" value="b"><span class="hypothesis-text">This is a premium tier signal — customers aren't price-sensitive, they're testing whether Zestly can replace more of their errands</span></label>
+                <label class="hypothesis-option" onclick="selectHypothesis(this, 'sig001')"><input type="radio" name="hyp-sig001" value="c"><span class="hypothesis-text">The demand is real but operationally premature — driver routing, item pricing, and retail partner agreements all need solving first</span></label>
+              </div>
+              <div class="affected-section">
+                <div class="affected-label">Signal Markets</div>
+                <div class="market-rows" id="market-rows-sig001"></div>
+              </div>
+              <div class="action-section">
+                <div class="action-row">
+                  <div class="action-field"><label>Assign Owner</label><input type="text" id="owner-sig001" placeholder="e.g. Growth Team" /></div>
+                  <div class="action-field" style="max-width:160px;"><label>Due Date</label><input type="date" id="due-sig001" /></div>
+                  <button class="btn-log" onclick="logDecision('sig001')">Log Decision</button>
+                </div>
+              </div>
+              <div class="dismiss-row">
+                <span class="dismiss-label">Dismiss:</span>
+                <button class="btn-dismiss" onclick="dismissCard('sig001', 'knew')">Already knew this</button>
+                <button class="btn-dismiss" onclick="dismissCard('sig001', 'resolved')">Not pursuing</button>
+                <button class="btn-dismiss" onclick="dismissCard('sig001', 'irrelevant')">Not relevant</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SIG-002 -->
+          <div class="signal-card state-new" id="card-sig002">
+            <div class="card-top">
+              <div class="card-meta-row">
+                <span class="state-badge new">New Signal</span>
+                <span class="card-category">Demand / Expansion · SIG-002</span>
+              </div>
+              <div class="card-headline">Live market customers are asking Zestly to replace their grocery run</div>
+              <div class="card-quote">
+                <div class="card-quote-text">"Could the driver grab a carton of eggs from the store on the way? I know it's not on the menu, I figured I'd ask."</div>
+                <div class="card-quote-source">Sendbird Desk · New York Live · CS-1318 · Apr 5</div>
+              </div>
+              <div class="card-pattern">
+                <span class="pattern-stat" data-sig="sig002" data-sessions="87" data-verb="requested" data-topic="grocery or fresh produce items">— customer messages across 87 sessions requested grocery or fresh produce items in last 30 days</span>
+                <span class="pattern-trend">78 of 87 from live markets · NY alone: 48 mentions</span>
+              </div>
+              <div class="card-context">The live market concentration is the signal inside the signal. Customers who've ordered 10+ times are starting to use Zestly like a general delivery layer. CS is closing all of these as "out of scope." None are reaching product or growth.</div>
+              <div class="lifecycle-strip">
+                <div class="lifecycle-step current"><div class="lifecycle-step-dot"></div><div class="lifecycle-step-label">Detected</div></div>
+                <div class="lifecycle-connector"></div>
+                <div class="lifecycle-step"><div class="lifecycle-step-dot"></div><div class="lifecycle-step-label">Under Review</div></div>
+                <div class="lifecycle-connector"></div>
+                <div class="lifecycle-step"><div class="lifecycle-step-dot"></div><div class="lifecycle-step-label">Decision Logged</div></div>
+                <div class="lifecycle-connector"></div>
+                <div class="lifecycle-step"><div class="lifecycle-step-dot"></div><div class="lifecycle-step-label">Check-in</div></div>
+              </div>
+            </div>
+            <button class="card-quotes-cta" onclick="openEvidencePanel('sig002')"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5h9M2 6.5h6M2 9.5h4"/></svg> View messages</button>
+            <a class="card-chat-link" href="#" onclick="switchToChat();return false;"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1h10v7H7l-3 2V8H1z"/></svg> View customer messages from Sendbird Chat</a>
+            <button class="card-expand-toggle" onclick="toggleCard('sig002')">
+              <span class="toggle-label"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5.5"/><path d="M7 4.5v3l1.5 1"/></svg> Explore this signal</span>
+              <svg class="chevron" id="chevron-sig002" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5l4 4 4-4"/></svg>
+            </button>
+            <div class="card-body" id="body-sig002">
+              <div class="hypotheses-section">
+                <div class="hypotheses-label">What does this signal mean for Zestly?</div>
+                <label class="hypothesis-option" onclick="selectHypothesis(this, 'sig002')"><input type="radio" name="hyp-sig002" value="a"><span class="hypothesis-text">High-frequency users have built enough trust to use Zestly for fresh food — mirrors how DoorDash and Uber Eats expanded into grocery</span></label>
+                <label class="hypothesis-option" onclick="selectHypothesis(this, 'sig002')"><input type="radio" name="hyp-sig002" value="b"><span class="hypothesis-text">Live market engagement is driving category blur — customers who order twice a week stop thinking in "restaurant delivery" terms</span></label>
+                <label class="hypothesis-option" onclick="selectHypothesis(this, 'sig002')"><input type="radio" name="hyp-sig002" value="c"><span class="hypothesis-text">Grocery requires a different fulfillment model — store partnerships, item-picking UX, substitution logic — validate demand before committing to operations</span></label>
+              </div>
+              <div class="affected-section">
+                <div class="affected-label">Signal Markets</div>
+                <div class="market-rows" id="market-rows-sig002"></div>
+              </div>
+              <div class="action-section">
+                <div class="action-row">
+                  <div class="action-field"><label>Assign Owner</label><input type="text" id="owner-sig002" placeholder="e.g. Product / Partnerships" /></div>
+                  <div class="action-field" style="max-width:160px;"><label>Due Date</label><input type="date" id="due-sig002" /></div>
+                  <button class="btn-log" onclick="logDecision('sig002')">Log Decision</button>
+                </div>
+              </div>
+              <div class="dismiss-row">
+                <span class="dismiss-label">Dismiss:</span>
+                <button class="btn-dismiss" onclick="dismissCard('sig002', 'knew')">Already knew this</button>
+                <button class="btn-dismiss" onclick="dismissCard('sig002', 'resolved')">Not pursuing</button>
+                <button class="btn-dismiss" onclick="dismissCard('sig002', 'irrelevant')">Not relevant</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SIG-003 -->
+          <div class="signal-card state-logged" id="card-sig003">
+            <div class="card-top">
+              <div class="card-meta-row">
+                <span class="state-badge logged">Decision Logged</span>
+                <span class="card-category">Demand / Expansion · SIG-003</span>
+              </div>
+              <div class="card-headline">A premium cluster is asking for something Zestly has never offered</div>
+              <div class="card-quote">
+                <div class="card-quote-text">"This is probably a weird ask but — do you have anything where a chef comes to your place and cooks? Like a private chef type thing?"</div>
+                <div class="card-quote-source">Sendbird Desk · San Francisco Live · CS-1334 · Apr 8</div>
+              </div>
+              <div class="card-pattern">
+                <span class="pattern-stat" data-sig="sig003" data-sessions="23" data-verb="mentioned" data-topic="private chef, home cook, or on-demand cooking">— customer messages across 23 sessions mentioned private chef, home cook, or on-demand cooking in last 30 days</span>
+                <span class="pattern-trend">All from SF (14) and NY (9) · avg surrounding order value 2.4× market</span>
+              </div>
+              <div class="card-context">Low volume, but the customer profile is unlike anything else in the data. These are Zestly's highest-value users — not first-timers, not price-sensitive. LENs flagged this as a signal worth watching, not acting on yet.</div>
+              <div class="lifecycle-strip">
+                <div class="lifecycle-step done"><div class="lifecycle-step-dot"></div><div class="lifecycle-step-label">Detected</div></div>
+                <div class="lifecycle-connector done"></div>
+                <div class="lifecycle-step done"><div class="lifecycle-step-dot"></div><div class="lifecycle-step-label">Under Review</div></div>
+                <div class="lifecycle-connector done"></div>
+                <div class="lifecycle-step current"><div class="lifecycle-step-dot"></div><div class="lifecycle-step-label">Decision Logged</div></div>
+                <div class="lifecycle-connector"></div>
+                <div class="lifecycle-step"><div class="lifecycle-step-dot"></div><div class="lifecycle-step-label">Check-in</div></div>
+              </div>
+            </div>
+            <button class="card-quotes-cta" onclick="openEvidencePanel('sig003')"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5h9M2 6.5h6M2 9.5h4"/></svg> View messages</button>
+            <button class="card-expand-toggle" onclick="toggleCard('sig003')">
+              <span class="toggle-label"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L11 4"/></svg> View logged decision</span>
+              <svg class="chevron" id="chevron-sig003" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5l4 4 4-4"/></svg>
+            </button>
+            <div class="card-body" id="body-sig003">
+              <div class="hypotheses-section">
+                <div class="hypotheses-label">Interpretation selected</div>
+                <label class="hypothesis-option selected"><input type="radio" name="hyp-sig003" value="a" checked><span class="hypothesis-text">Distinct premium customer segment — high-value early adopters in SF and NY asking Zestly to become something new</span></label>
+                <label class="hypothesis-option" style="opacity:0.5;"><input type="radio" name="hyp-sig003" value="b" disabled><span class="hypothesis-text">Category confusion — customers who think of Zestly as a general concierge service</span></label>
+                <label class="hypothesis-option" style="opacity:0.5;"><input type="radio" name="hyp-sig003" value="c" disabled><span class="hypothesis-text">Volume too low to be actionable — interesting noise, not a real signal yet</span></label>
+              </div>
+              <div class="affected-section">
+                <div class="affected-label">Signal Markets</div>
+                <div class="market-rows" id="market-rows-sig003"></div>
+              </div>
+              <div class="logged-summary">
+                <div class="logged-summary-label">Decision logged Apr 8, 2026</div>
+                <div class="logged-detail">Owner: <strong>Head of Product</strong> &nbsp;·&nbsp; Due: <strong>May 15, 2026</strong></div>
+                <div class="logged-detail" style="margin-top:4px; color:var(--text-3);">Monitor SF + NY signal for 90 days — if volume doubles by Q3, escalate to roadmap evaluation</div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /signals-content -->
+      </div><!-- /signals-layout -->
+
+    </div><!-- /view-pipeline (Signals) -->
+
+    <!-- ── Outcomes View ──────────────────────── -->
+    <div class="view" id="view-outcomes">
+      <div class="view-header">
+        <div class="view-header-top">
+          <div class="view-header-title">Tracked Outcomes</div>
+        </div>
+      </div>
+      <div class="view-scroll-body">
+      <div class="view-desc" style="margin-bottom:16px">Decisions logged from signals · outcome check-ins appear automatically 60 days after a decision is logged</div>
+
+      <div class="stats-strip">
+        <div class="stat-item">
+          <div class="stat-value" style="color:#0369a1">1</div>
+          <div class="stat-label">Decision pending</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-value">0</div>
+          <div class="stat-label">Outcomes closed</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-value">Jun 10, 2026</div>
+          <div class="stat-label">Next check-in</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-value">61</div>
+          <div class="stat-label">Days remaining</div>
+        </div>
+      </div>
+
+      <div class="section-label-row">Pending check-in</div>
+
+      <!-- SIG-003 Outcome Card -->
+      <div class="outcome-card">
+        <div class="outcome-card-header">
+          <div class="outcome-state-row">
+            <span class="state-badge logged">Decision Logged</span>
+            <span class="card-category">Demand / Expansion · SIG-003</span>
+          </div>
+          <div class="outcome-headline">
+            A premium cluster is asking for something Zestly has never offered
+          </div>
+        </div>
+
+        <div class="outcome-decision">
+          <div class="outcome-decision-label">Interpretation selected</div>
+          <div class="outcome-decision-selected">
+            Distinct premium customer segment — high-value early adopters in SF and NY asking Zestly to become something new. No competitor offers this as a structured product.
+          </div>
+          <div class="outcome-meta-row">
+            <span>Owner: <strong>Head of Product</strong></span>
+            <span>Due: <strong>May 15, 2026</strong></span>
+            <span>Logged: <strong>Apr 8, 2026</strong></span>
+          </div>
+        </div>
+
+        <div class="timeline">
+          <div class="timeline-label">Signal lifecycle</div>
+          <div class="timeline-items">
+            <div class="timeline-item">
+              <div class="timeline-dot filled"></div>
+              <div class="timeline-date">Apr 1, 2026</div>
+              <div class="timeline-event">Signal detected by LENs</div>
+              <div class="timeline-detail">23 chat sessions mentioning private chef or home cook identified across SF (14) and NY (9). Average surrounding order value 2.4× market average. No operational trigger — pure demand signal.</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot filled"></div>
+              <div class="timeline-date">Apr 8, 2026</div>
+              <div class="timeline-event">Decision logged</div>
+              <div class="timeline-detail">Owner: Head of Product · Interpretation: distinct premium segment · Decision: monitor for 90 days before evaluating</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot pending"></div>
+              <div class="timeline-date">May 15, 2026</div>
+              <div class="timeline-event" style="color:var(--text-3)">Due date</div>
+              <div class="timeline-detail">30-day signal review — has SF + NY volume grown, held, or faded?</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot pending"></div>
+              <div class="timeline-date">Jul 1, 2026</div>
+              <div class="timeline-event" style="color:var(--text-3)">90-day check-in</div>
+              <div class="timeline-detail">LENs will ask: Did on-demand chef mentions double? Did they spread to other live markets? If yes — escalate to product roadmap evaluation.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkin-locked">
+          <div>
+            <div class="checkin-locked-label">Outcome check-in</div>
+            <div class="checkin-locked-date">Available Jul 1, 2026 · 77 days remaining</div>
+          </div>
+          <button class="btn-checkin-locked" disabled>Check in · Jul 1</button>
+        </div>
+      </div>
+
+      <div class="section-label-row" style="margin-top:24px">Completed outcomes</div>
+      <div class="empty-section">
+        <div class="empty-section-title">No completed outcomes yet</div>
+        <div class="empty-section-sub">Outcomes appear here once a check-in is completed and the result is logged</div>
+      </div>
+      </div><!-- /view-scroll-body -->
+    </div><!-- /view-outcomes -->
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════════
+       EVIDENCE PANEL (right slide-in)
+  ═══════════════════════════════════════════════ -->
+  <div class="evidence-overlay" id="evidence-overlay" onclick="closeEvidencePanel()"></div>
+  <div class="evidence-panel" id="evidence-panel">
+    <div class="evidence-panel-header">
+      <div>
+        <div class="evidence-panel-title" id="evidence-panel-title">Customer Quotes</div>
+        <div class="evidence-panel-meta" id="evidence-panel-meta"></div>
+        <a class="evidence-dc-link" id="evidence-dc-link" href="#" target="_blank" rel="noopener" title="Open the Data Center's raw corpus view, filtered to this signal's customer messages">See sources in Data Center <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8 L8 3 M4.2 3 L8 3 L8 6.8"/></svg></a>
+      </div>
+      <button class="evidence-close-btn" onclick="closeEvidencePanel()" aria-label="Close">✕</button>
+    </div>
+    <div class="evidence-panel-body" id="evidence-panel-body"></div>
+  </div>
+
+  </div><!-- /.app-body -->
+</div><!-- /.app -->
+
+<script src="./data.js"></script>
+<script>
+  // ── Shared utils ─────────────────────────────────────
+  const REPORT_DATE = new Date('2026-04-10');
+
+  function daysSince(dateStr) {
+    return Math.floor((REPORT_DATE - new Date(dateStr)) / (1000 * 60 * 60 * 24));
+  }
+  function monthsLabel(days) {
+    if (days < 30) return days + 'd';
+    return Math.floor(days / 30) + 'mo';
+  }
+
+  // Cities where active demand signals (SIG-001 or SIG-002) appear
+  const SIGNAL_PARTNERS = new Set([
+    'Denver', 'Nashville', 'Minneapolis', 'Phoenix',          // SIG-001 convenience retail
+    'New York', 'Los Angeles', 'San Francisco', 'Chicago'     // SIG-002 grocery
+  ]);
+
+// ── Navigation ───────────────────────────────────────
+  document.querySelectorAll('.nav-item[data-view]').forEach(item => {
+    item.addEventListener('click', () => {
+      const view = item.dataset.view;
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-' + view)?.classList.add('active');
+    });
+  });
+
+  // ── Market Rows (inside signal cards) ───────────────
+  // Build lookup: city name → metrics
+  const metricsNameMap = {};
+  marketMetrics.forEach(m => { metricsNameMap[m.marketName] = m; });
+
+  // Also build market lookup: name → market object (for state + stage)
+  const marketNameMap = {};
+  markets.forEach(m => { marketNameMap[m.name] = m; });
+
+  function renderMarketRows(containerId, cityNames) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = cityNames.map(name => {
+      const m = metricsNameMap[name];
+      const mk = marketNameMap[name];
+      const chats = m?.avgDailyChatSessions;
+      const mentions = m?.demandSignalMentions;
+      const stage = mk?.stage || '';
+      const state = mk?.state || '';
+      const mentionColor = !mentions ? 'var(--text-3)' : mentions >= 40 ? '#d97706' : 'var(--text-1)';
+      return `
+        <div class="market-row">
+          <div class="market-row-left">
+            <span class="stage-pill ${stage}" style="font-size:9px;padding:1px 6px">${stage}</span>
+            <span class="market-row-name">${name}${state ? ', ' + state : ''}</span>
+          </div>
+          <div class="market-row-right">
+            ${chats ? `<div class="market-row-stat">
+              <span class="market-row-stat-val">${chats.toLocaleString()}</span>
+              <span class="market-row-stat-label">chats/day</span>
+            </div>` : ''}
+            ${mentions != null ? `<div class="market-row-stat">
+              <span class="market-row-stat-val" style="color:${mentionColor}">${mentions}</span>
+              <span class="market-row-stat-label">mentions</span>
+            </div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  renderMarketRows('market-rows-sig001', ['Denver', 'Nashville', 'Minneapolis', 'Phoenix']);
+  renderMarketRows('market-rows-sig002', ['New York', 'Los Angeles', 'San Francisco', 'Chicago']);
+  renderMarketRows('market-rows-sig003', ['San Francisco', 'New York']);
+
+  // ── Expansion Category Cards ─────────────────────────
+  const expGrid = document.getElementById('expansion-grid');
+
+  expansionPipeline.forEach(cat => {
+    const marketsHtml = cat.topMarkets.map(m =>
+      `<span class="partner-chip">${m}</span>`
+    ).join('');
+
+    const card = document.createElement('div');
+    card.className = `expansion-card stage-${cat.stage}`;
+    card.innerHTML = `
+      <div class="expansion-card-top">
+        <div class="expansion-meta-row">
+          <span class="expansion-stage-pill ${cat.stage}">${cat.stage.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+          <span class="card-category">${cat.signalId}</span>
+        </div>
+        <div class="expansion-headline">${cat.category}</div>
+        <div class="expansion-subtitle">${cat.subtitle}</div>
+        <div class="expansion-evidence">
+          <span class="evidence-count">${cat.chatMentions30d.toLocaleString()}</span>
+          <div>
+            <div class="evidence-label">chat mentions · last 30 days</div>
+            <div class="evidence-trend">${cat.chatMentionsTrend}</div>
+          </div>
+        </div>
+        <div class="expansion-quote">
+          <div class="expansion-quote-text">"${cat.sampleVerbatim}"</div>
+          <div class="expansion-quote-source">${cat.sampleSource}</div>
+        </div>
+        <div class="expansion-market-label">Signal markets</div>
+        <div class="expansion-markets">${marketsHtml}</div>
+      </div>
+      <div class="expansion-lens">
+        <div class="expansion-lens-label">LENs sees</div>
+        <div class="expansion-lens-text">${cat.lensInsight}</div>
+      </div>
+    `;
+    expGrid.appendChild(card);
+  });
+</script>
+
+<script>
+  // ── Evidence Panel ───────────────────────────────────
+  // sigId → DC signal id + chatMessages signalTag. Single source of truth.
+  const SIGNAL_META = {
+    sig001: { dcId: "SIG-001", tag: "convenience-retail" },
+    sig002: { dcId: "SIG-002", tag: "grocery-fresh"      },
+    sig003: { dcId: "SIG-003", tag: "on-demand-chef"     }
+  };
+
+  // Returns the full set of customer-role messages carrying the signal's
+  // tag. Used both by the evidence panel body and by the card button
+  // counts — keeping them locked to the same number the Data Center
+  // will show on deep-link.
+  function getSignalQuotes(sigId) {
+    const m = SIGNAL_META[sigId];
+    if (!m || typeof chatMessages === 'undefined') return [];
+    return chatMessages.filter(x => x.signalTag === m.tag && x.role === 'customer');
+  }
+
+  function openEvidencePanel(sigId) {
+    const data = signalEvidence[sigId];
+    const meta = SIGNAL_META[sigId];
+    if (!data || !meta) return;
+
+    const quotes = getSignalQuotes(sigId);
+    const count  = quotes.length;
+
+    document.getElementById('evidence-panel-title').textContent = data.title;
+    document.getElementById('evidence-panel-meta').textContent =
+      `${count} customer ${count === 1 ? 'message' : 'messages'} from Sendbird Desk · last 30 days`;
+
+    // Wire the Data Center deep-link to this signal's raw-view filter.
+    const dcLink = document.getElementById('evidence-dc-link');
+    if (dcLink) {
+      dcLink.href = `../Data Center/index.html#workspace=lens&view=raw&sig=${meta.dcId}`;
+    }
+
+    const body = document.getElementById('evidence-panel-body');
+    body.innerHTML = quotes.map(q => `
+      <div class="evidence-quote-item">
+        <div class="evidence-quote-body">"${q.text}"</div>
+        <div class="evidence-quote-footer">
+          <span class="evidence-quote-market">${q.market}</span>
+          <span class="evidence-quote-ticket">${q.ticketId || q.sessionId} · ${q.date}</span>
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('evidence-panel').classList.add('open');
+    document.getElementById('evidence-overlay').classList.add('open');
+  }
+
+  function closeEvidencePanel() {
+    document.getElementById('evidence-panel').classList.remove('open');
+    document.getElementById('evidence-overlay').classList.remove('open');
+  }
+
+  // ── Navigation (also here as fallback) ───────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.nav-item[data-view]').forEach(item => {
+      item.addEventListener('click', () => {
+        const view = item.dataset.view;
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        item.classList.add('active');
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + view)?.classList.add('active');
+      });
+    });
+
+    // Unit-matched copy: body text carries the dynamic message count + static
+    // session count; the button is just a verb. One source of truth for the
+    // message count: chatMessages.filter(signalTag + role=customer).
+    document.querySelectorAll('.pattern-stat[data-sig]').forEach(span => {
+      const sigId   = span.dataset.sig;
+      const sessions = span.dataset.sessions;
+      const verb    = span.dataset.verb;
+      const topic   = span.dataset.topic;
+      const count   = getSignalQuotes(sigId).length;
+      span.textContent =
+        `${count} customer ${count === 1 ? 'message' : 'messages'} across ${sessions} sessions ${verb} ${topic} in last 30 days`;
+    });
+    document.querySelectorAll('.card-quotes-cta').forEach(btn => {
+      const iconSVG = btn.querySelector('svg');
+      btn.innerHTML = '';
+      if (iconSVG) btn.appendChild(iconSVG);
+      btn.appendChild(document.createTextNode(' View messages'));
+    });
+  });
+
+  // ── Signal Card Interactions ──────────────────────────
+
+  let openSignalCount = 2;
+
+  // (tab switcher removed — Chat and Signals are now separate nav items)
+
+  // ── Signal left-nav lifecycle filter ──────────────────
+  let currentSignalFilter = 'detected';
+
+  // Maps signal card CSS class → filter key
+  const CARD_STATE_MAP = {
+    'state-new':    'detected',
+    'state-logged': 'decision-logged',
+    'state-done':   'check-in'
+  };
+
+  function filterSignals(filter) {
+    currentSignalFilter = filter;
+
+    // Update left nav active state
+    document.querySelectorAll('.slnav-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.filter === filter);
+    });
+
+    // Show/hide signal cards
+    const allCards = document.querySelectorAll('.signal-card');
+    let visibleCount = 0;
+    allCards.forEach(card => {
+      let cardState = 'detected';
+      if (card.classList.contains('state-logged')) cardState = 'decision-logged';
+      if (card.classList.contains('state-done'))   cardState = 'check-in';
+      // Permanently dismissed cards never show
+      if (card.dataset.dismissed === 'true') { card.style.display = 'none'; return; }
+      const show = filter === 'all' || cardState === filter;
+      card.style.display = show ? '' : 'none';
+      if (show) visibleCount++;
+    });
+
+    // Show empty state if no cards visible
+    let empty = document.getElementById('signals-empty-state');
+    if (visibleCount === 0) {
+      if (!empty) {
+        empty = document.createElement('div');
+        empty.id = 'signals-empty-state';
+        empty.className = 'signals-content-empty';
+        const stateLabels = { 'under-review': 'Under Review', 'check-in': 'Check-in', 'detected': 'Detected', 'decision-logged': 'Decision Logged', 'all': 'any state' };
+        empty.innerHTML = `<div class="signals-content-empty-title">No signals in ${stateLabels[filter] || filter}</div>
+          <div class="signals-content-empty-sub">Signals move here as they progress through the lifecycle</div>`;
+        document.getElementById('signals-content').appendChild(empty);
+      } else {
+        empty.style.display = '';
+        const stateLabels = { 'under-review': 'Under Review', 'check-in': 'Check-in', 'detected': 'Detected', 'decision-logged': 'Decision Logged', 'all': 'any state' };
+        empty.querySelector('.signals-content-empty-title').textContent = `No signals in ${stateLabels[filter] || filter}`;
+      }
+    } else if (empty) {
+      empty.style.display = 'none';
+    }
+  }
+
+  // ── Pipeline lifecycle chip filter ────────────────────
+  let currentPipeFilter = 'detected';
+
+  function filterPipeline(stage) {
+    currentPipeFilter = stage;
+    document.querySelectorAll('.lifecycle-chip').forEach(chip => {
+      chip.classList.remove('active');
+    });
+    const target = document.getElementById('pipe-chip-' + stage);
+    if (target) target.classList.add('active');
+
+    // Filter expansion cards
+    document.querySelectorAll('.expansion-card').forEach(card => {
+      const cardStage = Array.from(card.classList)
+        .find(c => c.startsWith('stage-'))?.replace('stage-', '');
+      card.style.display = (stage === 'all' || cardStage === stage) ? '' : 'none';
+    });
+  }
+
+  // ── Render chat category list ─────────────────────────
+  function renderChatPanel() {
+    const cats = csTicketSummary.topCategories;
+    const totalTickets = csTicketSummary.totalTickets || 52;
+
+    document.getElementById('chat-summary-meta').textContent =
+      totalTickets + ' tickets · last 30 days';
+
+    const list = document.getElementById('chat-category-list');
+    list.innerHTML = cats.map(cat => {
+      const wr = cat.manualWorkaroundRate;
+      const wrPct = Math.round(wr * 100);
+      const wrClass = wr >= 0.8 ? 'danger' : wr >= 0.5 ? 'warn' : 'ok';
+      const rankClass = cat.rank <= 2 ? 'top' : '';
+      return `
+        <div class="chat-category-card">
+          <div class="chat-category-rank ${rankClass}">${cat.rank}</div>
+          <div class="chat-category-body">
+            <div class="chat-category-name">${cat.category}</div>
+            <div class="chat-category-stats">
+              <div class="chat-stat">
+                <span class="chat-stat-val">${cat.count}</span>
+                <span class="chat-stat-label">tickets</span>
+              </div>
+              <div class="chat-stat">
+                <span class="chat-stat-val">${cat.pctOfTotal.toFixed(1)}%</span>
+                <span class="chat-stat-label">of total</span>
+              </div>
+              <div class="chat-stat">
+                <div class="workaround-bar-row">
+                  <div class="workaround-bar-track">
+                    <div class="workaround-bar-fill ${wrClass}" style="width:${wrPct}%"></div>
+                  </div>
+                  <span class="chat-stat-val ${wrClass}">${wrPct}%</span>
+                </div>
+                <span class="chat-stat-label">manual workaround</span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('chat-lens-text').textContent =
+      'AI Bot Escalation Failure has a 100% manual workaround rate — every bot failure becomes a live agent ticket. Combined with Message Delivery Delay at 72%, over half of all CS volume has a human workaround baked in. These aren\'t just support tickets; they\'re latent demand signals for Sendbird configuration improvements that could materially reduce CS load.';
+  }
+
+  // ── Initialize ────────────────────────────────────────
+  (function init() {
+    renderChatPanel();        // populate Chat view
+    filterSignals('detected'); // default filter in Signals view
+  })();
+
+  function toggleCard(id) {
+    const body = document.getElementById('body-' + id);
+    const chevron = document.getElementById('chevron-' + id);
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    chevron.classList.toggle('open', !isOpen);
+  }
+
+  function selectHypothesis(label, cardId) {
+    const section = label.closest('.hypotheses-section');
+    section.querySelectorAll('.hypothesis-option').forEach(opt => opt.classList.remove('selected'));
+    label.classList.add('selected');
+  }
+
+  function logDecision(id) {
+    const card = document.getElementById('card-' + id);
+    const owner = document.getElementById('owner-' + id)?.value?.trim();
+    const due = document.getElementById('due-' + id)?.value;
+    const selected = card.querySelector('.hypothesis-option.selected');
+
+    if (!selected) {
+      alert('Please select a hypothesis before logging a decision.');
+      return;
+    }
+
+    // Transition card to "decision logged" state
+    card.classList.remove('state-new');
+    card.classList.add('state-logged');
+
+    const stateBadge = card.querySelector('.state-badge');
+    stateBadge.className = 'state-badge logged';
+    stateBadge.textContent = 'Decision Logged';
+
+    // Replace action section with logged summary
+    const actionSection = card.querySelector('.action-section');
+    const dismissRow = card.querySelector('.dismiss-row');
+    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const dueLabel = due ? new Date(due).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not set';
+
+    const summary = document.createElement('div');
+    summary.className = 'logged-summary';
+    summary.innerHTML = `
+      <div class="logged-summary-label">Decision logged ${today}</div>
+      <div class="logged-detail">
+        Owner: <strong>${owner || 'Unassigned'}</strong> &nbsp;·&nbsp;
+        Due: <strong>${dueLabel}</strong>
+      </div>
+      <div class="logged-detail" style="margin-top:4px; color:var(--text-3);">
+        Outcome check-in will appear 60 days after due date
+      </div>
+    `;
+
+    actionSection.replaceWith(summary);
+    if (dismissRow) dismissRow.remove();
+
+    // Disable hypothesis radios
+    card.querySelectorAll('.hypothesis-option:not(.selected)').forEach(opt => {
+      opt.style.opacity = '0.4';
+    });
+    card.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = true);
+
+    // Update toggle label
+    const toggleLabel = card.querySelector('.toggle-label');
+    if (toggleLabel) {
+      toggleLabel.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M3 8l3.5 3.5L11 4"/>
+        </svg>
+        View logged decision
+      `;
+    }
+
+    updateSignalCount();
+  }
+
+  function dismissCard(id, reason) {
+    const card = document.getElementById('card-' + id);
+    card.style.opacity = '0.4';
+    card.style.pointerEvents = 'none';
+    card.style.transition = 'opacity 0.3s';
+    setTimeout(() => {
+      card.dataset.dismissed = 'true'; // mark as permanently hidden
+      card.style.display = 'none';
+      updateSignalCount();
+    }, 300);
+  }
+
+  function updateSignalCount() {
+    const allCards = document.querySelectorAll('.signal-card');
+    let detectedCount = 0, loggedCount = 0, checkinCount = 0;
+    allCards.forEach(card => {
+      if (card.dataset.dismissed === 'true') return;
+      if (card.classList.contains('state-new'))    detectedCount++;
+      if (card.classList.contains('state-logged')) loggedCount++;
+      if (card.classList.contains('state-done'))   checkinCount++;
+    });
+    const totalCount = detectedCount + loggedCount + checkinCount;
+
+    // Sidebar badge + header pill
+    document.getElementById('signals-count').textContent = totalCount;
+    const pill = document.getElementById('open-signals-pill');
+    if (pill) pill.textContent = detectedCount + ' open signal' + (detectedCount !== 1 ? 's' : '');
+
+    // Left nav counts
+    const el = id => document.getElementById(id);
+    if (el('slnav-count-detected'))       el('slnav-count-detected').textContent = detectedCount;
+    if (el('slnav-count-under-review'))   el('slnav-count-under-review').textContent = 0;
+    if (el('slnav-count-decision-logged'))el('slnav-count-decision-logged').textContent = loggedCount;
+    if (el('slnav-count-check-in'))       el('slnav-count-check-in').textContent = checkinCount;
+    if (el('slnav-count-all'))            el('slnav-count-all').textContent = totalCount;
+
+    // Feed meta
+    const meta = el('signals-feed-meta');
+    if (meta) meta.textContent = `${detectedCount} detected · ${loggedCount} decision${loggedCount !== 1 ? 's' : ''} logged`;
+
+    // Re-run filter to hide/show correctly after state change
+    filterSignals(currentSignalFilter);
+  }
+
+  function switchToChat() {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelector('.nav-item[data-view="signals"]')?.classList.add('active');
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-signals')?.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+</script>
+
+</body>
+</html>
