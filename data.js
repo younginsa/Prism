@@ -1029,6 +1029,16 @@ const issues = {
     owner: "Investigating · Platform reliability",
     valueProp: "Order-confirmation webhooks fail silently during a 30-minute overnight window.",
     summary: "Two merchants reported missing order-confirmation webhooks delivered between 02:00–02:30 KST. Affects post-checkout fulfillment automations.",
+    // System-detected origin — Prism elevated a monitor signal to the briefing
+    // surface hours before the morning CS reports came in. Mirrors the role of
+    // `merchantChat` / `headQuote` for human-originated issues: this is the
+    // "originating signal" that fans out into role-tuned briefings.
+    systemSignal: {
+      source: "reliability/webhook-monitor",
+      code: "WEBHOOK_RETRY_DROP_02KST",
+      trigger: "Order-confirmation webhook success rate fell to 58% between 02:14–02:32 KST (threshold: 95%). Pattern coincides with the 02:00 KST infra maintenance window.",
+      detectedAt: "02:34 KST",
+    },
     patternMatch: {
       summary: "Time-windowed webhook failure aligned with infra maintenance",
       confidence: "Medium",

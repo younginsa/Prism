@@ -654,6 +654,12 @@
     .app.role-engineer .platform-rail {
       display: none;
     }
+    /* Engineer view: platform-rail is hidden, so .app-body's intentional left-gutter-of-0
+       (which normally sits against the rail) leaves .main flush to the screen edge.
+       Restore symmetric horizontal padding so the workspace mirrors the 10px right gutter. */
+    .app.role-engineer .app-body {
+      padding-left: 10px;
+    }
     /* Engineer Home: workspace title above the stat tiles. */
     .eng-workspace-title {
       font-size: var(--fs-display);
@@ -1552,6 +1558,7 @@
       font-size: var(--fs-meta);
       color: var(--accent);
       text-decoration: none;
+      cursor: pointer; /* Rendered as inert <span> — explicit pointer preserves the clickable affordance previously provided by <a href>. */
     }
     .rb-trail-card-source:hover { color: var(--accent-dark); text-decoration: underline; }
 
@@ -3081,6 +3088,17 @@
       color: var(--text-3);
       line-height: 1.4;
       white-space: nowrap;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;                   /* tiny separator between date and time when both present */
+    }
+    /* When the entry has no datetime/date data (e.g. priorContext entries that
+       carry only a label+note), collapse the column entirely so the body content
+       fills the full mini-box width without a hanging left indent. display:none
+       removes the element from the flex flow so the parent .tl-mini's gap doesn't
+       apply, which width:0 alone wouldn't achieve. */
+    .tl-mini-time:empty {
+      display: none;
     }
     .tl-mini-body {
       flex: 1;
@@ -3116,7 +3134,8 @@
       flex-shrink: 0;
       width: 56px;
       font-family: var(--mono);
-      font-size: var(--fs-meta);
+      font-size: var(--fs-tag);   /* match .tl-mini-time (Prior context / Trigger event) — was fs-meta, read one tier too large next to those siblings */
+      line-height: 1.4;            /* match .tl-mini-time line-height for vertical rhythm parity */
       color: var(--text-3);
       padding-top: 1px;
     }
@@ -3587,10 +3606,14 @@
     .rail.cs-overlay .rail-timeline .tl-sequence {
       gap: 20px;
     }
-    .rail.cs-overlay .rail-timeline .tl-card-body {
-      grid-template-columns: 108px minmax(0, 1fr) 220px;
-      gap: 18px;
-    }
+    /* Removed stale 3-column grid override for .tl-card-body.
+       The class name `.cs-overlay` now means "overlay sheet mode" (applies to PM
+       timeline rail as well as CS rails — see toggle at renderApp). The override
+       was a leftover from a previous 3-column trigger-event layout that's gone;
+       today the body is a single .tl-stack and a 3-column grid leaves columns 2
+       and 3 empty, producing a large gap inside every card body. The default
+       .tl-card-body padding is the correct single-column treatment for both
+       CS and PM. */
     .rail.cs-overlay .rail-timeline .tl-card {
       border-radius: 18px;
     }
@@ -3638,6 +3661,58 @@
       color: var(--text-1);
       white-space: pre-wrap;
       word-break: break-word;
+    }
+    /* System-event box — parallels .cs-customer-message but for machine-originated
+       signals (monitor alerts, log bursts, error codes). Full mono treatment +
+       light-gray background reads unambiguously as "machine voice" (log/console
+       aesthetic) alongside the human-voice customer-message box. Used in PM
+       role-briefing + deep-dive when an issue has systemSignal instead of
+       headQuote. */
+    .cs-system-event {
+      margin-top: 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #f1f5f9;            /* slate-100 — light gray, console-tone */
+      padding: 12px 14px;
+      font-family: var(--mono);       /* all descendants inherit mono unless overridden */
+    }
+    .cs-system-event-label {
+      font-family: var(--mono);
+      font-size: var(--fs-meta);
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: var(--ls-caps);
+      margin-bottom: 8px;
+    }
+    .cs-system-event-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 14px;
+      font-family: var(--mono);
+      font-size: var(--fs-meta);
+      color: var(--text-3);
+      margin-bottom: 8px;
+    }
+    .cs-system-event-source {
+      color: var(--text-2);
+    }
+    .cs-system-event-body {
+      font-family: var(--mono);
+      font-size: var(--fs-meta);     /* dropped from fs-body to fs-meta so the prose reads at the same scale as the mono meta line above */
+      line-height: 1.55;
+      color: var(--text-1);
+    }
+    .cs-system-event-code {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #e2e8f0;           /* slate-200 — one tick darker than the box bg so the chip remains visible */
+      color: #475569;                /* slate-600 */
+      font-family: var(--mono);
+      font-size: var(--fs-tag);
+      letter-spacing: 0.02em;
     }
     /* Resolution timeline — shown for resolved general inquiries below the customer message. */
     .cs-resolution {
@@ -4936,6 +5011,7 @@
       pmRoleBriefingOpen: false,  // PM Home → click team in coord brief → role briefing rail
       pmRoleBriefingRole: null,   // 'CS' | 'Product' | 'Engineering' (which role)
       pmRoleBriefingFrom: null,   // 'detail' | 'timeline' — where the briefing was opened from (for back-flow on close)
+      pmTimelineRailScrollY: 0,   // remembered scrollTop of #rail-body, so "← Back to timeline" returns to the exact scroll position the user left
       pmIssueListFilter: 'investigating', // 'investigating' | 'resolved' | 'archived'
       engIssueListFilter: 'investigating',  // 'all' | 'investigating' | 'resolved' | 'archived'
       engPlatformFilter: [],                // array of platform IDs; empty = all platforms
@@ -5757,7 +5833,7 @@
           body: `
             <div class="tl-stack">
               <div class="tl-mini">
-                ${triggerTimeShort ? `<div class="tl-mini-time">${triggerTimeShort}</div>` : ''}
+                ${renderMiniTime(trigger.datetime)}
                 <div class="tl-mini-body">
                   <div class="tl-mini-title">${trigger.patternClass}</div>
                   ${chat.verbatim ? `
@@ -5788,11 +5864,11 @@
             <div class="tl-stack">
               ${priorContext.map(p => `
                 <div class="tl-mini">
-                  <div class="tl-mini-time">${p.date || ''}</div>
+                  ${renderMiniTime(p.datetime || p.date)}
                   <div class="tl-mini-body">
                     <div class="tl-mini-title">${p.label || ''}</div>
                     <div class="tl-mini-note">${p.note || ''}</div>
-                    ${p.link ? `<a class="tl-entry-link" href="${escapeAttr(p.link)}">${truncate(p.link.split('/').pop(), 48)} ↗</a>` : ''}
+                    ${p.link ? `<span class="tl-entry-link" role="presentation">${truncate(p.link.split('/').pop(), 48)} ↗</span>` : ''}
                   </div>
                 </div>
               `).join('')}
@@ -5855,6 +5931,18 @@
       const match = String(input || '').match(/(\d{4})-(\d{2})-(\d{2})/);
       if (!match) return null;
       return `${match[1]}-${match[2]}-${match[3]}`;
+    }
+    // Two-line date/time block for .tl-mini-time — pulls YYYY-MM-DD and HH:MM
+    // out of any datetime-shaped string and stacks them. If either is missing,
+    // only the present one renders; if both are missing, returns an empty box
+    // so the column still reserves its 78px width and the flex layout doesn't shift.
+    function renderMiniTime(input) {
+      const s = String(input || '');
+      const dateMatch = s.match(/(\d{4}-\d{2}-\d{2})/);
+      const timeMatch = s.match(/(\d{2}:\d{2})/);
+      const date = dateMatch ? dateMatch[1] : '';
+      const clock = timeMatch ? timeMatch[1] : '';
+      return `<div class="tl-mini-time">${date ? `<div class="tl-mini-time-date">${date}</div>` : ''}${clock ? `<div class="tl-mini-time-clock">${clock}</div>` : ''}</div>`;
     }
     function mergeDateAndTime(dateLike, timeLike) {
       const datePart = timelineDateOnly(dateLike);
@@ -6820,22 +6908,29 @@
           </div>
           <div class="deepdive-body">
             <div class="dd-section">
-              <div class="dd-section-label">Head · originating inquiry</div>
-              <div class="brief-quote" style="margin:0;">
-                "${briefing.headQuote}"
-                ${briefing.headQuoteEn ? `<div class="muted" style="margin-top:4px;font-style:italic;font-size:var(--fs-meta);">${briefing.headQuoteEn}</div>` : ''}
-              </div>
+              <div class="dd-section-label">Head · ${issue.systemSignal && !briefing.headQuote ? 'originating signal' : 'originating inquiry'}</div>
+              ${briefing.headQuote ? `
+                <div class="brief-quote" style="margin:0;">
+                  "${briefing.headQuote}"
+                  ${briefing.headQuoteEn ? `<div class="muted" style="margin-top:4px;font-style:italic;font-size:var(--fs-meta);">${briefing.headQuoteEn}</div>` : ''}
+                </div>
+              ` : issue.systemSignal ? `
+                <div class="cs-system-event">
+                  <div class="cs-system-event-label">System event</div>
+                  <div class="cs-system-event-meta">
+                    ${issue.systemSignal.source ? `<span class="cs-system-event-source">${issue.systemSignal.source}</span>` : ''}
+                    ${issue.systemSignal.detectedAt ? `<span>Detected ${issue.systemSignal.detectedAt}</span>` : ''}
+                  </div>
+                  <div class="cs-system-event-body">${issue.systemSignal.trigger}</div>
+                  ${issue.systemSignal.code ? `<div class="cs-system-event-code">${issue.systemSignal.code}</div>` : ''}
+                </div>
+              ` : ''}
               <div style="display:flex;gap:16px;margin-top:10px;font-family:var(--mono);font-size:var(--fs-meta);color:var(--text-3);flex-wrap:wrap;">
                 <span>To: ${briefing.recipient}</span>
                 <span>Published: ${briefing.publishedAt}</span>
                 <span>Confidence: <span style="color:var(--state-good);">${briefing.confidence}</span></span>
               </div>
               <div class="muted" style="margin-top:4px;font-size:var(--fs-meta);">Evidence: ${briefing.confidenceEvidence}</div>
-            </div>
-
-            <div class="dd-section">
-              <div class="dd-section-label">Why you're seeing this</div>
-              <div class="dd-section-body" style="font-style:italic;">${briefing.whyYoureSeeingThis}</div>
             </div>
 
             <div class="dd-section">
@@ -6862,7 +6957,7 @@
                 ${briefing.trail.map(t => `
                   <div class="trail-item">
                     <div class="trail-claim">${t.claim}</div>
-                    <a class="trail-source" href="${escapeAttr(evidenceUrl(issue, t))}">${truncate(t.source, 60)} ↗</a>
+                    <span class="trail-source" role="presentation">${truncate(t.source, 60)} ↗</span>
                   </div>
                 `).join('')}
               </div>
@@ -6971,11 +7066,12 @@
             <button type="button" class="rb-back-chip" onclick="backToPmTimeline()">← Back to timeline</button>
           ` : ''}
 
-          <!-- Panel 1: Originating inquiry — head quote + recipient/published meta + confidence -->
+          <!-- Panel 1: Originating signal — head quote (CS path) OR system event (monitor path) + recipient/published meta + confidence.
+               Kicker label flips to "Originating signal" when the issue carries a systemSignal field so the heterogeneity is visible. -->
           <div class="cs-process-panel">
             <div class="cs-process-panel-head">
               <div>
-                <div class="cs-process-panel-kicker">Originating inquiry</div>
+                <div class="cs-process-panel-kicker">${issue.systemSignal ? 'Originating signal' : 'Originating inquiry'}</div>
                 <div class="cs-process-panel-subtitle">
                   ${briefing.recipient ? `To ${briefing.recipient}` : ''}${briefing.publishedAt ? ` · Published ${briefing.publishedAt}` : ''}
                 </div>
@@ -6988,6 +7084,16 @@
                   <div class="cs-customer-message-label">Head quote</div>
                   <div class="cs-customer-message-body">"${briefing.headQuote}"</div>
                 </div>
+              ` : issue.systemSignal ? `
+                <div class="cs-system-event">
+                  <div class="cs-system-event-label">System event</div>
+                  <div class="cs-system-event-meta">
+                    ${issue.systemSignal.source ? `<span class="cs-system-event-source">${issue.systemSignal.source}</span>` : ''}
+                    ${issue.systemSignal.detectedAt ? `<span>Detected ${issue.systemSignal.detectedAt}</span>` : ''}
+                  </div>
+                  <div class="cs-system-event-body">${issue.systemSignal.trigger}</div>
+                  ${issue.systemSignal.code ? `<div class="cs-system-event-code">${issue.systemSignal.code}</div>` : ''}
+                </div>
               ` : ''}
               ${briefing.confidenceEvidence ? `
                 <div class="rb-evidence-note">Evidence: ${briefing.confidenceEvidence}</div>
@@ -6995,21 +7101,7 @@
             </div>
           </div>
 
-          ${briefing.whyYoureSeeingThis ? `
-            <!-- Panel 2: Why you're seeing this (context for the role) -->
-            <div class="cs-process-panel">
-              <div class="cs-process-panel-head">
-                <div>
-                  <div class="cs-process-panel-kicker">Why you're seeing this</div>
-                </div>
-              </div>
-              <div class="cs-process-panel-body">
-                <div class="rb-body-text">${briefing.whyYoureSeeingThis}</div>
-              </div>
-            </div>
-          ` : ''}
-
-          <!-- Panel 3: Role-specific synthesis + next action -->
+          <!-- Panel 2: Role-specific synthesis + next action -->
           <div class="cs-process-panel">
             <div class="cs-process-panel-head">
               <div>
@@ -7041,7 +7133,7 @@
                   ${briefing.trail.map(t => `
                     <div class="rb-trail-card">
                       <div class="rb-trail-card-claim">${t.claim}</div>
-                      <a class="rb-trail-card-source" href="${escapeAttr(evidenceUrl(issue, t))}">${truncate(t.source, 60)} ↗</a>
+                      <span class="rb-trail-card-source" role="presentation">${truncate(t.source, 60)} ↗</span>
                     </div>
                   `).join('')}
                 </div>
@@ -7645,6 +7737,10 @@
       state.pmRoleBriefingOpen = false;
       state.pmRoleBriefingRole = null;
       state.pmRoleBriefingFrom = null;
+      // Fresh entry to the timeline starts at top — clear any remembered scroll
+      // from a prior session of this rail. (backToPmTimeline is the only path
+      // that should restore it.)
+      state.pmTimelineRailScrollY = 0;
       renderAll();
     }
     function closePmTimeline() {
@@ -7653,6 +7749,12 @@
     }
     function openPmRoleBriefing(role, from) {
       if (!role) return;
+      // Capture the rail's current scrollTop BEFORE the render flip — only when
+      // we're leaving the timeline view (so backToPmTimeline can restore it).
+      if (from === 'timeline') {
+        const _railBody = document.getElementById('rail-body');
+        state.pmTimelineRailScrollY = _railBody ? _railBody.scrollTop : 0;
+      }
       state.pmRoleBriefingOpen = true;
       state.pmRoleBriefingRole = role;
       // Track origin so the close action can return there ("back" flow).
@@ -7680,6 +7782,18 @@
       state.pmRoleBriefingFrom = null;
       state.pmTimelineRailOpen = true;
       renderAll();
+      // After the synchronous re-render swaps #rail-body back to the timeline
+      // markup, restore the scroll position the user left when they drilled
+      // into a role briefing. rAF ensures layout has settled before we set
+      // scrollTop (some browsers ignore scrollTop set on a freshly-injected
+      // overflow container until the next frame).
+      const _y = state.pmTimelineRailScrollY || 0;
+      if (_y > 0) {
+        requestAnimationFrame(() => {
+          const _railBody = document.getElementById('rail-body');
+          if (_railBody) _railBody.scrollTop = _y;
+        });
+      }
     }
     function setPmIssueListFilter(value) {
       const valid = new Set(['all', 'investigating', 'resolved', 'archived']);
